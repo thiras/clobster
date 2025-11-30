@@ -1,0 +1,69 @@
+# Pre-commit hooks configuration
+# See https://pre-commit.com for more information
+# Install: pre-commit install
+# Run manually: pre-commit run --all-files
+
+repos:
+  # Rust formatting
+  - repo: local
+    hooks:
+      - id: cargo-fmt
+        name: cargo fmt
+        entry: cargo fmt --
+        language: system
+        types: [rust]
+        pass_filenames: false
+        description: Format Rust code with rustfmt
+
+  # Rust linting
+  - repo: local
+    hooks:
+      - id: cargo-clippy
+        name: cargo clippy
+        entry: cargo clippy --all-targets --all-features -- -D warnings
+        language: system
+        types: [rust]
+        pass_filenames: false
+        description: Lint Rust code with Clippy (deny warnings)
+
+  # Cargo deny - security and license checks
+  - repo: local
+    hooks:
+      - id: cargo-deny
+        name: cargo deny check
+        entry: bash
+        args:
+          - -c
+          - 'command -v cargo-deny >/dev/null 2>&1 && cargo deny check || echo "⚠️  cargo-deny not installed. Run: cargo install cargo-deny"'
+        language: system
+        pass_filenames: false
+        description: Check dependencies for security advisories and license compliance
+        files: ^(Cargo\.(toml|lock)|deny\.toml)$
+
+  # Commit message linting
+  - repo: https://github.com/alessandrojcm/commitlint-pre-commit-hook
+    rev: v9.23.0
+    hooks:
+      - id: commitlint
+        stages: [commit-msg]
+        additional_dependencies: ['@commitlint/config-conventional']
+
+  # General file checks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+        exclude: '\.md$'
+      - id: end-of-file-fixer
+        exclude: '\.md$'
+      - id: check-yaml
+        args: [--allow-multiple-documents]
+      - id: check-added-large-files
+        args: [--maxkb=1000]
+      - id: check-merge-conflict
+      - id: mixed-line-ending
+        args: [--fix=lf]
+
+# Configuration
+default_language_version:
+  python: python3
