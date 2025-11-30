@@ -202,6 +202,9 @@ impl Strategy for MomentumStrategy {
         {
             self.take_profit_pct = Decimal::try_from(n).unwrap_or(self.take_profit_pct);
         }
+        if let Some(n) = config.parameters.get("min_volume").and_then(|v| v.as_f64()) {
+            self.min_volume = Decimal::try_from(n).unwrap_or(self.min_volume);
+        }
 
         Ok(())
     }
@@ -446,6 +449,32 @@ impl Strategy for MomentumStrategy {
             },
         );
 
+        params.insert(
+            "position_size".to_string(),
+            ParameterDef {
+                name: "position_size".to_string(),
+                description: "Default position size in USDC".to_string(),
+                param_type: ParameterType::Decimal,
+                default: ParameterValue::Decimal(Decimal::from(10)),
+                min: Some(ParameterValue::Decimal(Decimal::from(1))),
+                max: Some(ParameterValue::Decimal(Decimal::from(1000))),
+                allowed_values: None,
+            },
+        );
+
+        params.insert(
+            "min_volume".to_string(),
+            ParameterDef {
+                name: "min_volume".to_string(),
+                description: "Minimum market volume required for trading".to_string(),
+                param_type: ParameterType::Decimal,
+                default: ParameterValue::Decimal(Decimal::from(500)),
+                min: Some(ParameterValue::Decimal(Decimal::from(0))),
+                max: Some(ParameterValue::Decimal(Decimal::from(100000))),
+                allowed_values: None,
+            },
+        );
+
         params
     }
 
@@ -475,6 +504,16 @@ impl Strategy for MomentumStrategy {
             }
             "take_profit_pct" => {
                 self.take_profit_pct = value
+                    .as_decimal()
+                    .ok_or_else(|| crate::Error::invalid_input("Expected decimal"))?;
+            }
+            "position_size" => {
+                self.position_size = value
+                    .as_decimal()
+                    .ok_or_else(|| crate::Error::invalid_input("Expected decimal"))?;
+            }
+            "min_volume" => {
+                self.min_volume = value
                     .as_decimal()
                     .ok_or_else(|| crate::Error::invalid_input("Expected decimal"))?;
             }

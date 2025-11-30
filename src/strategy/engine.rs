@@ -4,7 +4,7 @@ use super::{RiskGuard, Signal, Strategy, StrategyConfig, StrategyContext};
 use crate::error::Result;
 use crate::state::{Action, OrderRequest, OrderType};
 use chrono::{DateTime, Utc};
-use std::collections::HashMap;
+use std::collections::{HashMap, VecDeque};
 use std::sync::Arc;
 use tokio::sync::{RwLock, mpsc};
 use tracing::{debug, error, info, warn};
@@ -19,8 +19,8 @@ pub struct StrategyEngine {
     action_tx: mpsc::UnboundedSender<Action>,
     /// Pending signals awaiting execution.
     pending_signals: Vec<Signal>,
-    /// Signal history.
-    signal_history: Vec<SignalRecord>,
+    /// Signal history (VecDeque for O(1) front removal).
+    signal_history: VecDeque<SignalRecord>,
     /// Engine configuration.
     config: EngineConfig,
     /// Is the engine running.
@@ -35,7 +35,7 @@ impl StrategyEngine {
             risk_guard: RiskGuard::new(config.risk_config.clone()),
             action_tx,
             pending_signals: Vec::new(),
-            signal_history: Vec::new(),
+            signal_history: VecDeque::new(),
             config,
             running: false,
         }
@@ -311,16 +311,16 @@ impl StrategyEngine {
     }
 
     fn record_signal(&mut self, signal: &Signal, executed: bool) {
-        self.signal_history.push(SignalRecord {
+        self.signal_history.push_back(SignalRecord {
             signal: signal.clone(),
             executed,
             executed_at: if executed { Some(Utc::now()) } else { None },
             result: None,
         });
 
-        // Trim history if too long
+        // Trim history if too long (O(1) with VecDeque)
         if self.signal_history.len() > self.config.max_signal_history {
-            self.signal_history.remove(0);
+            self.signal_history.pop_front();
         }
     }
 
@@ -330,7 +330,7 @@ impl StrategyEngine {
     }
 
     /// Get signal history.
-    pub fn signal_history(&self) -> &[SignalRecord] {
+    pub fn signal_history(&self) -> &VecDeque<SignalRecord> {
         &self.signal_history
     }
 
