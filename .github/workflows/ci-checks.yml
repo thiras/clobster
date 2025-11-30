@@ -190,6 +190,6 @@ jobs:
         run: sudo ln -sf /usr/local/bin/mold /usr/local/bin/ld.mold
 
       - name: Clippy
-        run: cargo clippy --profile ci --all-targets --all-features -- -D warnings
+        run: cargo clippy --all-targets --all-features -- -D warnings
         env:
           RUSTFLAGS: "-C linker=clang -C link-arg=-fuse-ld=mold"
