@@ -1,0 +1,16 @@
+# cargo-release configuration for crate releases
+# https://github.com/crate-ci/cargo-release/blob/master/docs/reference.md
+#
+# Note: Most configuration is done in Cargo.toml under [package.metadata.release]
+# This file contains pre-release hooks and replacements
+
+# Generate CHANGELOG.md using git-cliff before each release
+# This will automatically parse conventional commits and generate changelog entries
+pre-release-hook = ["git", "cliff", "-o", "CHANGELOG.md", "--tag", "v{{version}}"]
+
+# Update version badge in README.md
+[[pre-release-replacements]]
+file = "README.md"
+search = "\\[!\\[Version\\]\\(https://img\\.shields\\.io/badge/version-[^-]+-blue\\.svg\\)\\]"
+replace = "[![Version](https://img.shields.io/badge/version-{{version}}-blue.svg)]"
+exactly = 1

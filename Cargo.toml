@@ -2,5 +2,30 @@
 name = "clobster"
 version = "0.1.0"
 edition = "2024"
+license = "MIT"
+authors = ["Ant Somers <antsomers@gmail.com>"]
+repository = "https://github.com/thiras/clobster"
 
 [dependencies]
+
+# cargo-release configuration
+[package.metadata.release]
+# Do not publish to crates.io (proprietary software)
+publish = false
+# Do not push to git (handle manually or via CI)
+push = true
+# Create git tag for releases
+tag = true
+tag-name = "v{{version}}"
+tag-message = "Release v{{version}}"
+# Sign tags with GPG
+sign-tag = true
+# Sign commits with GPG
+sign-commit = true
+# Allow dirty working directory (for CI use)
+allow-branch = ["main"]
+# Pre-release checks
+pre-release-commit-message = "chore: release v{{version}}"
+# Enable changelog generation
+enable-features = []
+enable-all-features = false
