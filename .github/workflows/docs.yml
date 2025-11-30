@@ -1,0 +1,68 @@
+name: Deploy Documentation
+
+on:
+#   push:
+#     branches: [main]
+#     paths:
+#       - 'docs/**'
+#       - '.github/workflows/docs.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache mdBook binaries
+        uses: actions/cache@v4
+        id: mdbook-cache
+        with:
+          path: |
+            ~/.cargo/bin/mdbook
+            ~/.cargo/bin/mdbook-mermaid
+          key: ${{ runner.os }}-mdbook-bins-v2
+          restore-keys: |
+            ${{ runner.os }}-mdbook-bins-
+
+      - name: Install mdBook tools
+        if: steps.mdbook-cache.outputs.cache-hit != 'true'
+        run: |
+          cargo install mdbook --version 0.4.48 --locked
+          cargo install mdbook-mermaid --locked
+
+      - name: Install Mermaid support
+        run: |
+          cd docs
+          mdbook-mermaid install .
+
+      - name: Build documentation
+        run: |
+          cd docs
+          mdbook build
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./docs/book
+
+  # deploy:
+  #   needs: build
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Deploy to GitHub Pages
+  #       id: deployment
+  #       uses: actions/deploy-pages@v4

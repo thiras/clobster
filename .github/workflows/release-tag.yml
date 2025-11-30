@@ -1,0 +1,48 @@
+name: Release on Tag
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.*'
+
+jobs:
+  # Run CI checks before creating release
+  ci-checks:
+    uses: ./.github/workflows/ci-checks.yml
+
+  create-release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: ci-checks
+    if: ${{ github.repository_owner == 'thiras' }}
+    permissions:
+      contents: write
+      actions: write  # Required to trigger docker-release workflow
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Create GitHub Release
+        uses: taiki-e/create-gh-release-action@v1
+        with:
+          # Extract changelog for this version from CHANGELOG.md
+          changelog: CHANGELOG.md
+          # Optional: Customize release title (default is tag name)
+          title: $version
+          # Optional: Branch to use (default is the default branch)
+          branch: main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Trigger Docker Release
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'docker-release.yml',
+              ref: context.ref
+            });

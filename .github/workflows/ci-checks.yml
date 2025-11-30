@@ -1,0 +1,195 @@
+name: CI Checks (Reusable)
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: 0
+  RUST_BACKTRACE: 1
+  SCCACHE_GHA_ENABLED: "true"
+  RUSTC_WRAPPER: sccache
+  MOLD_VERSION: "2.35.1"
+
+jobs:
+  # ============================================================================
+  # Parallel jobs (no dependencies, run immediately)
+  # ============================================================================
+  format:
+    name: Format Check
+    runs-on: ubuntu-latest
+    env:
+      RUSTC_WRAPPER: ""  # Disable sccache for format check
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+
+      - name: Format check
+        run: cargo fmt --all -- --check
+
+  docs:
+    name: Documentation Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache mdBook binaries
+        uses: actions/cache@v4
+        id: mdbook-cache
+        with:
+          path: |
+            ~/.cargo/bin/mdbook
+            ~/.cargo/bin/mdbook-mermaid
+            ~/.cargo/bin/mdbook-katex
+          key: ${{ runner.os }}-mdbook-v4-${{ hashFiles('docs/book.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-mdbook-v4-
+            ${{ runner.os }}-mdbook-
+
+      - name: Install mdBook tools
+        if: steps.mdbook-cache.outputs.cache-hit != 'true'
+        run: |
+          cargo install mdbook --version 0.4.48 --locked
+          cargo install mdbook-mermaid --version 0.16.2 --locked
+          cargo install mdbook-katex --locked
+
+      - name: Install Mermaid support
+        run: |
+          cd docs
+          mdbook-mermaid install .
+
+      - name: Build docs
+        working-directory: docs
+        run: mdbook build
+
+  # Build test binaries once, then run tests in parallel shards
+  build-tests:
+    name: Build Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Setup sccache
+        uses: mozilla-actions/sccache-action@v0.0.9
+
+      - name: Cache mold linker
+        uses: actions/cache@v4
+        id: mold-cache
+        with:
+          path: /usr/local/bin/mold
+          key: ${{ runner.os }}-mold-${{ env.MOLD_VERSION }}
+
+      - name: Install mold linker
+        if: steps.mold-cache.outputs.cache-hit != 'true'
+        run: |
+          wget -qO- https://github.com/rui314/mold/releases/download/v${{ env.MOLD_VERSION }}/mold-${{ env.MOLD_VERSION }}-x86_64-linux.tar.gz | tar xzf -
+          sudo mv mold-${{ env.MOLD_VERSION }}-x86_64-linux/bin/mold /usr/local/bin/
+
+      - name: Setup mold symlink
+        run: sudo ln -sf /usr/local/bin/mold /usr/local/bin/ld.mold
+
+      - name: Install cargo-nextest
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-nextest
+
+      - name: Build tests
+        run: cargo nextest run --cargo-profile ci-test --all --no-run
+        env:
+          RUSTFLAGS: "-C linker=clang -C link-arg=-fuse-ld=mold"
+
+      - name: Create nextest archive
+        run: cargo nextest archive --cargo-profile ci-test --all --archive-file nextest-archive.tar.zst
+        env:
+          RUSTFLAGS: "-C linker=clang -C link-arg=-fuse-ld=mold"
+
+      - name: Upload test archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: nextest-archive
+          path: nextest-archive.tar.zst
+          retention-days: 1
+
+  test:
+    name: Test (${{ matrix.partition }}/3)
+    runs-on: ubuntu-latest
+    needs: build-tests
+    strategy:
+      fail-fast: false
+      matrix:
+        partition: [1, 2, 3]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install cargo-nextest
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-nextest
+
+      - name: Download test archive
+        uses: actions/download-artifact@v4
+        with:
+          name: nextest-archive
+
+      - name: Run tests (partition ${{ matrix.partition }}/3)
+        run: |
+          cargo nextest run \
+            --archive-file nextest-archive.tar.zst \
+            --partition count:${{ matrix.partition }}/3 \
+            --profile ci
+
+  lint:
+    name: Lint (Clippy)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+
+      - name: Setup sccache
+        uses: mozilla-actions/sccache-action@v0.0.9
+
+      - name: Cache mold linker
+        uses: actions/cache@v4
+        id: mold-cache
+        with:
+          path: /usr/local/bin/mold
+          key: ${{ runner.os }}-mold-${{ env.MOLD_VERSION }}
+
+      - name: Install mold linker
+        if: steps.mold-cache.outputs.cache-hit != 'true'
+        run: |
+          wget -qO- https://github.com/rui314/mold/releases/download/v${{ env.MOLD_VERSION }}/mold-${{ env.MOLD_VERSION }}-x86_64-linux.tar.gz | tar xzf -
+          sudo mv mold-${{ env.MOLD_VERSION }}-x86_64-linux/bin/mold /usr/local/bin/
+
+      - name: Setup mold symlink
+        run: sudo ln -sf /usr/local/bin/mold /usr/local/bin/ld.mold
+
+      - name: Clippy
+        run: cargo clippy --profile ci --all-targets --all-features -- -D warnings
+        env:
+          RUSTFLAGS: "-C linker=clang -C link-arg=-fuse-ld=mold"
