@@ -170,12 +170,24 @@ impl Strategy for MeanReversionStrategy {
                 let exit_deviation = self.calculate_deviation(current_price, entry.ma_at_entry);
 
                 if exit_deviation.abs() < self.exit_threshold {
-                    // Price reverted to mean - exit
-                    let signal = Signal::sell(
-                        market.condition_id.clone(),
-                        token_id.clone(),
-                        self.position_size,
-                    )
+                    // Price reverted to mean - exit with opposite side of entry
+                    let exit_side = match entry.side {
+                        OrderSide::Buy => OrderSide::Sell,
+                        OrderSide::Sell => OrderSide::Buy,
+                    };
+
+                    let signal = match exit_side {
+                        OrderSide::Buy => Signal::buy(
+                            market.condition_id.clone(),
+                            token_id.clone(),
+                            self.position_size,
+                        ),
+                        OrderSide::Sell => Signal::sell(
+                            market.condition_id.clone(),
+                            token_id.clone(),
+                            self.position_size,
+                        ),
+                    }
                     .with_strategy(self.name())
                     .with_type(SignalType::Exit)
                     .with_strength(SignalStrength::Medium)
@@ -238,6 +250,12 @@ impl Strategy for MeanReversionStrategy {
                         .with_price(current_price)
                         .with_reason(signal_reason);
 
+                    // Store MA at entry in indicators for later retrieval
+                    signal.metadata.indicators.insert(
+                        "ma_at_entry".to_string(),
+                        ma.to_string().parse().unwrap_or(0.0),
+                    );
+
                     signals.push(signal);
                 }
             }
@@ -253,12 +271,20 @@ impl Strategy for MeanReversionStrategy {
 
         match signal.signal_type {
             SignalType::Entry => {
+                // Extract MA from signal indicators, fallback to entry price
+                let ma_at_entry = signal
+                    .metadata
+                    .indicators
+                    .get("ma_at_entry")
+                    .and_then(|v| Decimal::try_from(*v).ok())
+                    .unwrap_or_else(|| signal.price.unwrap_or(Decimal::ZERO));
+
                 self.entered_markets.insert(
                     signal.market_id.clone(),
                     EntryInfo {
                         entry_price: signal.price.unwrap_or(Decimal::ZERO),
                         side: signal.side,
-                        ma_at_entry: signal.price.unwrap_or(Decimal::ZERO), // Simplified
+                        ma_at_entry,
                     },
                 );
             }
@@ -317,9 +343,9 @@ impl Strategy for MeanReversionStrategy {
                 name: "position_size".to_string(),
                 description: "Default position size in USDC".to_string(),
                 param_type: ParameterType::Decimal,
-                default: ParameterValue::Float(10.0),
-                min: Some(ParameterValue::Float(1.0)),
-                max: Some(ParameterValue::Float(1000.0)),
+                default: ParameterValue::Decimal(Decimal::from(10)),
+                min: Some(ParameterValue::Decimal(Decimal::from(1))),
+                max: Some(ParameterValue::Decimal(Decimal::from(1000))),
                 allowed_values: None,
             },
         );

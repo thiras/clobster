@@ -56,8 +56,11 @@ pub trait Strategy: Send + Sync + Debug {
 
     /// Called when market data is updated.
     ///
-    /// Optional hook for strategies that need to track price changes
-    /// or update internal indicators.
+    /// Optional hook for strategies that need to respond to new market data.
+    /// The provided `StrategyContext` contains a snapshot of the current market state,
+    /// including prices, positions, and orders. Strategies that need to track price
+    /// changes should compare the current snapshot to previous ones to detect changes
+    /// and update internal indicators or state as needed.
     fn on_market_update(&mut self, _ctx: &StrategyContext) {}
 
     /// Called when an order from this strategy is filled.

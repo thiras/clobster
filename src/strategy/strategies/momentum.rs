@@ -206,6 +206,7 @@ impl Strategy for MomentumStrategy {
         Ok(())
     }
 
+    #[allow(clippy::collapsible_if)] // Intentionally avoiding let-chains for stable Rust
     fn evaluate(&mut self, ctx: &StrategyContext) -> Vec<Signal> {
         let mut signals = Vec::new();
 
@@ -222,40 +223,53 @@ impl Strategy for MomentumStrategy {
             let token_id = market.token_ids.first().cloned().unwrap_or_default();
 
             // Check existing position for stop loss / take profit
-            if let Some(position) = self.positions.get(&market.condition_id)
-                && let Some(exit_type) = self.check_stop_loss_take_profit(position, current_price)
-            {
-                let strength = match exit_type {
-                    SignalType::StopLoss => SignalStrength::VeryStrong,
-                    SignalType::TakeProfit => SignalStrength::Strong,
-                    _ => SignalStrength::Medium,
-                };
+            if let Some(position) = self.positions.get(&market.condition_id) {
+                if let Some(exit_type) = self.check_stop_loss_take_profit(position, current_price) {
+                    let strength = match exit_type {
+                        SignalType::StopLoss => SignalStrength::VeryStrong,
+                        SignalType::TakeProfit => SignalStrength::Strong,
+                        _ => SignalStrength::Medium,
+                    };
 
-                let reason = match exit_type {
-                    SignalType::StopLoss => format!(
-                        "Stop loss triggered at {:.4} (entry: {:.4})",
-                        current_price, position.entry_price
-                    ),
-                    SignalType::TakeProfit => format!(
-                        "Take profit triggered at {:.4} (entry: {:.4})",
-                        current_price, position.entry_price
-                    ),
-                    _ => String::new(),
-                };
+                    let reason = match exit_type {
+                        SignalType::StopLoss => format!(
+                            "Stop loss triggered at {:.4} (entry: {:.4})",
+                            current_price, position.entry_price
+                        ),
+                        SignalType::TakeProfit => format!(
+                            "Take profit triggered at {:.4} (entry: {:.4})",
+                            current_price, position.entry_price
+                        ),
+                        _ => String::new(),
+                    };
 
-                let signal = Signal::sell(
-                    market.condition_id.clone(),
-                    token_id.clone(),
-                    self.position_size,
-                )
-                .with_strategy(self.name())
-                .with_type(exit_type)
-                .with_strength(strength)
-                .with_price(current_price)
-                .with_reason(reason);
+                    // Exit with opposite side of entry position
+                    let exit_side = match position.side {
+                        OrderSide::Buy => OrderSide::Sell,
+                        OrderSide::Sell => OrderSide::Buy,
+                    };
 
-                signals.push(signal);
-                continue;
+                    let signal = match exit_side {
+                        OrderSide::Buy => Signal::buy(
+                            market.condition_id.clone(),
+                            token_id.clone(),
+                            self.position_size,
+                        ),
+                        OrderSide::Sell => Signal::sell(
+                            market.condition_id.clone(),
+                            token_id.clone(),
+                            self.position_size,
+                        ),
+                    }
+                    .with_strategy(self.name())
+                    .with_type(exit_type)
+                    .with_strength(strength)
+                    .with_price(current_price)
+                    .with_reason(reason);
+
+                    signals.push(signal);
+                    continue;
+                }
             }
 
             // Calculate momentum for new entries

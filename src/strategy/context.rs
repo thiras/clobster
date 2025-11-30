@@ -111,6 +111,9 @@ impl StrategyContext {
     }
 
     /// Calculate exponential moving average for a market.
+    ///
+    /// Computes EMA by first calculating SMA of the first `periods` points,
+    /// then applying the EMA formula over the remaining history.
     pub fn ema(&self, condition_id: &str, periods: usize) -> Option<Decimal> {
         let history = self.price_history.get(condition_id)?;
         if history.len() < periods {
@@ -118,9 +121,13 @@ impl StrategyContext {
         }
 
         let multiplier = Decimal::from(2) / Decimal::from(periods + 1);
-        let mut ema = history[0].price;
 
-        for point in history.iter().take(periods) {
+        // Initialize EMA with SMA of first `periods` points
+        let sma_sum: Decimal = history.iter().take(periods).map(|p| p.price).sum();
+        let mut ema = sma_sum / Decimal::from(periods);
+
+        // Apply EMA formula over the rest of the history
+        for point in history.iter().skip(periods) {
             ema = (point.price - ema) * multiplier + ema;
         }
 

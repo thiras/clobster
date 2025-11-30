@@ -252,6 +252,7 @@ impl StrategyEngine {
     }
 
     /// Execute pending signals that are configured for auto-execution.
+    #[allow(clippy::collapsible_if)] // Intentionally avoiding let-chains for stable Rust
     pub async fn execute_pending_signals(&mut self) -> Result<Vec<String>> {
         let mut executed = Vec::new();
 
@@ -266,11 +267,11 @@ impl StrategyEngine {
             }
 
             // Check if strategy is configured for auto-execution
-            if let Some(handle) = self.strategies.get(&signal.strategy_name)
-                && !handle.config.auto_execute
-            {
-                debug!("Signal {} not auto-executed (disabled)", signal.id);
-                continue;
+            if let Some(handle) = self.strategies.get(&signal.strategy_name) {
+                if !handle.config.auto_execute {
+                    debug!("Signal {} not auto-executed (disabled)", signal.id);
+                    continue;
+                }
             }
 
             // Convert signal to order request
@@ -285,8 +286,9 @@ impl StrategyEngine {
             self.record_signal(&signal, true);
             executed.push(signal.id.clone());
 
-            // Notify strategy
-            if let Some(handle) = self.strategies.get(&signal.strategy_name) {
+            // Notify strategy and update execution count
+            if let Some(handle) = self.strategies.get_mut(&signal.strategy_name) {
+                handle.signals_executed += 1;
                 let mut strategy = handle.strategy.write().await;
                 strategy.on_signal_executed(&signal, true);
             }
@@ -407,10 +409,10 @@ impl StrategyEngine {
         self.record_signal(&signal, true);
         self.pending_signals.retain(|s| s.id != signal_id);
 
-        if let Some(handle) = self.strategies.get(&signal.strategy_name) {
+        if let Some(handle) = self.strategies.get_mut(&signal.strategy_name) {
+            handle.signals_executed += 1;
             let mut strategy = handle.strategy.write().await;
             strategy.on_signal_executed(&signal, true);
-            // Update execution count
         }
 
         Ok(())

@@ -103,6 +103,11 @@ impl SpreadStrategy {
         inventory: Decimal,
         side: OrderSide,
     ) -> Decimal {
+        // Avoid division by zero if max_inventory_imbalance is zero
+        if self.max_inventory_imbalance.is_zero() {
+            return base_size;
+        }
+
         // Reduce size when inventory is imbalanced in the direction of the trade
         let imbalance_ratio = inventory.abs() / self.max_inventory_imbalance;
 

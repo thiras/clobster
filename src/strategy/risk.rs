@@ -28,6 +28,9 @@ impl RiskGuard {
             return Err(RiskViolation::TradingDisabled);
         }
 
+        // Check market whitelist/blacklist
+        self.check_market_allowed(signal)?;
+
         // Check position size limits
         self.check_position_size(signal)?;
 
@@ -40,7 +43,7 @@ impl RiskGuard {
         // Check market-specific limits
         self.check_market_exposure(signal, ctx)?;
 
-        // Check daily limits
+        // Check daily limits (not yet implemented)
         self.check_daily_limits()?;
 
         // Check price bounds
@@ -49,23 +52,44 @@ impl RiskGuard {
         Ok(())
     }
 
-    fn check_position_size(&self, signal: &Signal) -> Result<(), RiskViolation> {
-        if let Some(max_size) = self.config.max_position_size
-            && signal.size > max_size
-        {
-            return Err(RiskViolation::PositionSizeExceeded {
-                requested: signal.size,
-                max: max_size,
+    fn check_market_allowed(&self, signal: &Signal) -> Result<(), RiskViolation> {
+        // Check blacklist first
+        if self.config.blacklisted_markets.contains(&signal.market_id) {
+            return Err(RiskViolation::MarketBlacklisted {
+                market_id: signal.market_id.clone(),
             });
         }
 
-        if let Some(min_size) = self.config.min_position_size
-            && signal.size < min_size
+        // Check whitelist (if non-empty, only whitelisted markets are allowed)
+        if !self.config.whitelisted_markets.is_empty()
+            && !self.config.whitelisted_markets.contains(&signal.market_id)
         {
-            return Err(RiskViolation::PositionSizeTooSmall {
-                requested: signal.size,
-                min: min_size,
+            return Err(RiskViolation::MarketNotWhitelisted {
+                market_id: signal.market_id.clone(),
             });
+        }
+
+        Ok(())
+    }
+
+    #[allow(clippy::collapsible_if)] // Intentionally avoiding let-chains for stable Rust
+    fn check_position_size(&self, signal: &Signal) -> Result<(), RiskViolation> {
+        if let Some(max_size) = self.config.max_position_size {
+            if signal.size > max_size {
+                return Err(RiskViolation::PositionSizeExceeded {
+                    requested: signal.size,
+                    max: max_size,
+                });
+            }
+        }
+
+        if let Some(min_size) = self.config.min_position_size {
+            if signal.size < min_size {
+                return Err(RiskViolation::PositionSizeTooSmall {
+                    requested: signal.size,
+                    min: min_size,
+                });
+            }
         }
 
         Ok(())
@@ -79,9 +103,15 @@ impl RiskGuard {
         if let Some(max_exposure) = self.config.max_total_exposure {
             let current_exposure = ctx.total_exposure();
             let signal_value = signal.size * signal.price.unwrap_or(Decimal::ONE);
-            let new_exposure = current_exposure + signal_value;
 
-            if new_exposure > max_exposure {
+            // Sell signals reduce exposure, buy signals increase it
+            let new_exposure = match signal.side {
+                OrderSide::Buy => current_exposure + signal_value,
+                OrderSide::Sell => current_exposure.saturating_sub(signal_value),
+            };
+
+            // Only check limit for buy signals that increase exposure
+            if signal.side == OrderSide::Buy && new_exposure > max_exposure {
                 return Err(RiskViolation::TotalExposureExceeded {
                     current: current_exposure,
                     requested: signal_value,
@@ -99,7 +129,7 @@ impl RiskGuard {
         ctx: &StrategyContext,
     ) -> Result<(), RiskViolation> {
         if let Some(max_positions) = self.config.max_positions {
-            // Only check for new positions (entry signals)
+            // Check for new positions (buy signals without existing position)
             if signal.side == OrderSide::Buy {
                 let existing = ctx.get_position(&signal.token_id);
                 if existing.is_none() {
@@ -149,8 +179,9 @@ impl RiskGuard {
     }
 
     fn check_daily_limits(&self) -> Result<(), RiskViolation> {
-        // TODO: Track daily trading volume/count
-        // For now, always pass
+        // NOTE: Daily limit tracking is not yet implemented.
+        // This requires persistent state to track daily volume/trade count.
+        // For now, this check always passes.
         Ok(())
     }
 
