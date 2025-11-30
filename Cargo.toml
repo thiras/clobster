@@ -5,8 +5,60 @@ edition = "2024"
 license = "MIT"
 authors = ["Ant Somers <antsomers@gmail.com>"]
 repository = "https://github.com/thiras/clobster"
+description = "A production-grade TUI framework for Polymarket"
+keywords = ["polymarket", "tui", "trading", "prediction-markets"]
+categories = ["command-line-interface", "finance"]
 
 [dependencies]
+# TUI Framework
+ratatui = { version = "0.29", features = ["all-widgets"] }
+crossterm = "0.28"
+
+# Polymarket API Client
+polymarket-rs = "0.1.5"
+
+# Async Runtime
+tokio = { version = "1.41", features = ["full", "rt-multi-thread", "macros", "sync", "time"] }
+tokio-stream = "0.1"
+futures = "0.3"
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Error Handling
+thiserror = "2.0"
+anyhow = "1.0"
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+tracing-appender = "0.2"
+
+# Configuration
+config = "0.14"
+directories = "5.0"
+
+# Utilities
+chrono = { version = "0.4", features = ["serde"] }
+rust_decimal = { version = "1.36", features = ["serde"] }
+uuid = { version = "1.11", features = ["v4", "serde"] }
+toml = "0.8"
+
+# Crypto/Wallet
+alloy-signer = "0.6"
+alloy-signer-local = "0.6"
+
+[dev-dependencies]
+pretty_assertions = "1.4"
+mockall = "0.13"
+tokio-test = "0.4"
+
+[profile.release]
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true
 
 # cargo-release configuration
 [package.metadata.release]
