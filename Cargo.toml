@@ -42,8 +42,10 @@ directories = "5.0"
 # Utilities
 chrono = { version = "0.4", features = ["serde"] }
 rust_decimal = { version = "1.36", features = ["serde"] }
+rust_decimal_macros = "1.36"
 uuid = { version = "1.11", features = ["v4", "serde"] }
 toml = "0.8"
+async-trait = "0.1"
 
 # Crypto/Wallet
 alloy-signer = "0.6"

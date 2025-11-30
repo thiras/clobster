@@ -22,8 +22,10 @@ pub mod config;
 pub mod error;
 pub mod events;
 pub mod state;
+pub mod strategy;
 pub mod ui;
 
 pub use app::App;
 pub use config::Config;
 pub use error::{Error, Result};
+pub use strategy::{Signal, Strategy, StrategyConfig, StrategyContext, StrategyEngine};
