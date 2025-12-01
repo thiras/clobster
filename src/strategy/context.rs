@@ -143,7 +143,14 @@ impl StrategyContext {
     }
 
     /// Calculate price change over N periods.
+    ///
+    /// Returns `None` if `periods` is 0 (meaningless comparison) or if
+    /// there is insufficient history.
     pub fn price_change(&self, condition_id: &str, periods: usize) -> Option<Decimal> {
+        if periods == 0 {
+            return None;
+        }
+
         let history = self.price_history.get(condition_id)?;
         if history.len() <= periods {
             return None;

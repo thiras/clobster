@@ -410,9 +410,15 @@ impl Strategy for SpreadStrategy {
                     .ok_or_else(|| crate::Error::invalid_input("Expected decimal"))?;
             }
             "max_inventory_imbalance" => {
-                self.max_inventory_imbalance = value
+                let val = value
                     .as_decimal()
                     .ok_or_else(|| crate::Error::invalid_input("Expected decimal"))?;
+                if val.is_zero() {
+                    return Err(crate::Error::invalid_input(
+                        "max_inventory_imbalance must be greater than zero",
+                    ));
+                }
+                self.max_inventory_imbalance = val;
             }
             "min_liquidity" => {
                 self.min_liquidity = value
