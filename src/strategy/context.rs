@@ -145,12 +145,12 @@ impl StrategyContext {
     /// Calculate price change over N periods.
     pub fn price_change(&self, condition_id: &str, periods: usize) -> Option<Decimal> {
         let history = self.price_history.get(condition_id)?;
-        if history.len() < periods {
+        if history.len() <= periods {
             return None;
         }
 
         let current = history.last()?.price;
-        let past = history[history.len().saturating_sub(periods)].price;
+        let past = history.get(history.len() - periods)?.price;
 
         if past.is_zero() {
             return None;

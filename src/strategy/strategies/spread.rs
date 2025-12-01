@@ -165,6 +165,13 @@ impl Strategy for SpreadStrategy {
         if let Some(n) = config.parameters.get("order_size").and_then(|v| v.as_f64()) {
             self.order_size = Decimal::try_from(n).unwrap_or(self.order_size);
         }
+        if let Some(n) = config
+            .parameters
+            .get("min_liquidity")
+            .and_then(|v| v.as_f64())
+        {
+            self.min_liquidity = Decimal::try_from(n).unwrap_or(self.min_liquidity);
+        }
 
         Ok(())
     }
@@ -352,6 +359,19 @@ impl Strategy for SpreadStrategy {
         );
 
         params.insert(
+            "min_liquidity".to_string(),
+            ParameterDef {
+                name: "min_liquidity".to_string(),
+                description: "Minimum market liquidity required for trading".to_string(),
+                param_type: ParameterType::Decimal,
+                default: ParameterValue::Decimal(Decimal::from(1000)),
+                min: Some(ParameterValue::Decimal(Decimal::from(0))),
+                max: Some(ParameterValue::Decimal(Decimal::from(1000000))),
+                allowed_values: None,
+            },
+        );
+
+        params.insert(
             "max_inventory_imbalance".to_string(),
             ParameterDef {
                 name: "max_inventory_imbalance".to_string(),
@@ -391,6 +411,11 @@ impl Strategy for SpreadStrategy {
             }
             "max_inventory_imbalance" => {
                 self.max_inventory_imbalance = value
+                    .as_decimal()
+                    .ok_or_else(|| crate::Error::invalid_input("Expected decimal"))?;
+            }
+            "min_liquidity" => {
+                self.min_liquidity = value
                     .as_decimal()
                     .ok_or_else(|| crate::Error::invalid_input("Expected decimal"))?;
             }
