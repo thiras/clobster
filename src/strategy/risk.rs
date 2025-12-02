@@ -107,7 +107,18 @@ impl RiskGuard {
             // Sell signals reduce exposure, buy signals increase it
             let new_exposure = match signal.side {
                 OrderSide::Buy => current_exposure + signal_value,
-                OrderSide::Sell => current_exposure.saturating_sub(signal_value),
+                OrderSide::Sell => {
+                    // Warn if trying to sell more than current exposure (potential logic error)
+                    if signal_value > current_exposure {
+                        tracing::warn!(
+                            "Sell signal value ({}) exceeds current exposure ({}). \
+                            This may indicate a logic error in the strategy.",
+                            signal_value,
+                            current_exposure
+                        );
+                    }
+                    current_exposure.saturating_sub(signal_value)
+                }
             };
 
             // Only check limit for buy signals that increase exposure

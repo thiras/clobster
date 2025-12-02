@@ -82,7 +82,8 @@ pub struct OrderRequest {
     pub market_id: String,
     pub token_id: String,
     pub side: OrderSide,
-    pub price: rust_decimal::Decimal,
+    /// Price for limit orders. None for market orders.
+    pub price: Option<rust_decimal::Decimal>,
     pub size: rust_decimal::Decimal,
     pub order_type: OrderType,
 }

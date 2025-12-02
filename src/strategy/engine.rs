@@ -298,15 +298,20 @@ impl StrategyEngine {
     }
 
     fn signal_to_order(&self, signal: &Signal) -> Result<OrderRequest> {
+        // For limit orders, price is required
+        if signal.order_type == OrderType::Limit && signal.price.is_none() {
+            return Err(crate::Error::invalid_input(
+                "Signal must have a price for limit order",
+            ));
+        }
+
         Ok(OrderRequest {
             market_id: signal.market_id.clone(),
             token_id: signal.token_id.clone(),
             side: signal.side,
-            price: signal.price.ok_or_else(|| {
-                crate::Error::invalid_input("Signal must have a price for limit order")
-            })?,
+            price: signal.price,
             size: signal.size,
-            order_type: OrderType::Limit,
+            order_type: signal.order_type,
         })
     }
 

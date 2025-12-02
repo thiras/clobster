@@ -122,28 +122,56 @@ impl Strategy for MeanReversionStrategy {
             .get("entry_threshold")
             .and_then(|v| v.as_f64())
         {
-            self.entry_threshold = Decimal::try_from(n).unwrap_or(self.entry_threshold);
+            match Decimal::try_from(n) {
+                Ok(d) => self.entry_threshold = d,
+                Err(e) => tracing::warn!(
+                    "Failed to convert entry_threshold {} to Decimal: {}, using default",
+                    n,
+                    e
+                ),
+            }
         }
         if let Some(n) = config
             .parameters
             .get("exit_threshold")
             .and_then(|v| v.as_f64())
         {
-            self.exit_threshold = Decimal::try_from(n).unwrap_or(self.exit_threshold);
+            match Decimal::try_from(n) {
+                Ok(d) => self.exit_threshold = d,
+                Err(e) => tracing::warn!(
+                    "Failed to convert exit_threshold {} to Decimal: {}, using default",
+                    n,
+                    e
+                ),
+            }
         }
         if let Some(n) = config
             .parameters
             .get("position_size")
             .and_then(|v| v.as_f64())
         {
-            self.position_size = Decimal::try_from(n).unwrap_or(self.position_size);
+            match Decimal::try_from(n) {
+                Ok(d) => self.position_size = d,
+                Err(e) => tracing::warn!(
+                    "Failed to convert position_size {} to Decimal: {}, using default",
+                    n,
+                    e
+                ),
+            }
         }
         if let Some(n) = config
             .parameters
             .get("min_liquidity")
             .and_then(|v| v.as_f64())
         {
-            self.min_liquidity = Decimal::try_from(n).unwrap_or(self.min_liquidity);
+            match Decimal::try_from(n) {
+                Ok(d) => self.min_liquidity = d,
+                Err(e) => tracing::warn!(
+                    "Failed to convert min_liquidity {} to Decimal: {}, using default",
+                    n,
+                    e
+                ),
+            }
         }
 
         Ok(())

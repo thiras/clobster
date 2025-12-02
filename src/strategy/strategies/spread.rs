@@ -154,23 +154,58 @@ impl Strategy for SpreadStrategy {
 
     async fn initialize(&mut self, config: &StrategyConfig) -> Result<()> {
         if let Some(n) = config.parameters.get("min_spread").and_then(|v| v.as_f64()) {
-            self.min_spread = Decimal::try_from(n).unwrap_or(self.min_spread);
+            match Decimal::try_from(n) {
+                Ok(d) => self.min_spread = d,
+                Err(e) => tracing::warn!(
+                    "Failed to convert min_spread {} to Decimal: {}, using default",
+                    n,
+                    e
+                ),
+            }
         }
         if let Some(n) = config.parameters.get("bid_offset").and_then(|v| v.as_f64()) {
-            self.bid_offset = Decimal::try_from(n).unwrap_or(self.bid_offset);
+            match Decimal::try_from(n) {
+                Ok(d) => self.bid_offset = d,
+                Err(e) => tracing::warn!(
+                    "Failed to convert bid_offset {} to Decimal: {}, using default",
+                    n,
+                    e
+                ),
+            }
         }
         if let Some(n) = config.parameters.get("ask_offset").and_then(|v| v.as_f64()) {
-            self.ask_offset = Decimal::try_from(n).unwrap_or(self.ask_offset);
+            match Decimal::try_from(n) {
+                Ok(d) => self.ask_offset = d,
+                Err(e) => tracing::warn!(
+                    "Failed to convert ask_offset {} to Decimal: {}, using default",
+                    n,
+                    e
+                ),
+            }
         }
         if let Some(n) = config.parameters.get("order_size").and_then(|v| v.as_f64()) {
-            self.order_size = Decimal::try_from(n).unwrap_or(self.order_size);
+            match Decimal::try_from(n) {
+                Ok(d) => self.order_size = d,
+                Err(e) => tracing::warn!(
+                    "Failed to convert order_size {} to Decimal: {}, using default",
+                    n,
+                    e
+                ),
+            }
         }
         if let Some(n) = config
             .parameters
             .get("min_liquidity")
             .and_then(|v| v.as_f64())
         {
-            self.min_liquidity = Decimal::try_from(n).unwrap_or(self.min_liquidity);
+            match Decimal::try_from(n) {
+                Ok(d) => self.min_liquidity = d,
+                Err(e) => tracing::warn!(
+                    "Failed to convert min_liquidity {} to Decimal: {}, using default",
+                    n,
+                    e
+                ),
+            }
         }
 
         Ok(())
