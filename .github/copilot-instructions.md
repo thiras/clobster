@@ -41,7 +41,7 @@ RUST_LOG=clobster=debug cargo run  # Run with debug logging
 ## Key Patterns
 
 ### State Management
-- All state lives in `Store` (composed of `AppState`, `MarketState`, `OrderState`, `PortfolioState`)
+- All state lives in `Store` (composed of `AppState`, `MarketState`, `OrderState`, `OrderBookState`, `PortfolioState`)
 - Mutations only via `Action` enum and `Store::reduce()`
 - Async operations dispatch actions through `mpsc::UnboundedSender<Action>`
 
@@ -85,6 +85,7 @@ Error::Api(polymarket_err)     // Wrap API errors (via From)
 - `ApiClient` wraps `polymarket-rs` crate
 - `DataConverter` in `src/api/converter.rs` transforms API types → internal state types
 - Rate limiting built into client via `RateLimiter`
+- `fetch_orderbook()` / `fetch_orderbooks()` for market depth data
 
 ## Conventions
 
@@ -94,7 +95,7 @@ Error::Api(polymarket_err)     // Wrap API errors (via From)
 - Async functions use `async_trait` macro for trait methods
 
 ### File Organization
-- One domain per state file: `market_state.rs`, `order_state.rs`, `portfolio_state.rs`
+- One domain per state file: `market_state.rs`, `order_state.rs`, `orderbook_state.rs`, `portfolio_state.rs`
 - UI widgets in `src/ui/widgets/` as separate modules
 - Strategy implementations in `src/strategy/strategies/`
 
