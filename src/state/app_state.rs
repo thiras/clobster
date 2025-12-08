@@ -8,6 +8,7 @@ pub enum View {
     #[default]
     Markets,
     MarketDetail,
+    OrderBook,
     Orders,
     OrderEntry,
     Positions,

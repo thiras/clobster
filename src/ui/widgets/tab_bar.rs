@@ -18,9 +18,10 @@ impl TabBar {
     pub fn render(frame: &mut Frame, area: Rect, store: &Store) {
         let tabs = vec![
             ("1", "Markets", View::Markets),
-            ("2", "Orders", View::Orders),
-            ("3", "Positions", View::Positions),
-            ("4", "Settings", View::Settings),
+            ("2", "Book", View::OrderBook),
+            ("3", "Orders", View::Orders),
+            ("4", "Positions", View::Positions),
+            ("5", "Settings", View::Settings),
         ];
 
         let mut spans = vec![Span::raw(" ")];

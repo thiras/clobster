@@ -121,6 +121,9 @@ impl EventHandler {
         if input.matches(&self.keybindings.markets) {
             return Some(Action::SetView(View::Markets));
         }
+        if input.matches(&self.keybindings.orderbook) {
+            return Some(Action::SetView(View::OrderBook));
+        }
         if input.matches(&self.keybindings.orders) {
             return Some(Action::SetView(View::Orders));
         }
@@ -161,6 +164,7 @@ impl EventHandler {
         // View-specific actions
         match snapshot.current_view {
             View::Markets | View::MarketDetail => self.handle_markets_view(key),
+            View::OrderBook => self.handle_orderbook_view(key),
             View::Orders | View::OrderEntry => self.handle_orders_view(key, snapshot),
             View::Positions | View::Portfolio => self.handle_positions_view(key),
             View::Settings => None,
@@ -178,7 +182,28 @@ impl EventHandler {
             return Some(Action::SetView(View::OrderEntry));
         }
 
+        // 'b' to jump to orderbook for selected market
+        if key.code == KeyCode::Char('b') {
+            return Some(Action::SetView(View::OrderBook));
+        }
+
         None
+    }
+
+    fn handle_orderbook_view(&self, key: KeyEvent) -> Option<Action> {
+        match key.code {
+            // Toggle outcome (Yes/No)
+            KeyCode::Char('o') | KeyCode::Char('O') => Some(Action::ToggleOrderBookOutcome),
+            // Cycle display mode
+            KeyCode::Char('m') | KeyCode::Char('M') => Some(Action::CycleOrderBookDisplayMode),
+            // Increase levels
+            KeyCode::Char('+') | KeyCode::Char('=') => Some(Action::IncreaseOrderBookLevels),
+            // Decrease levels
+            KeyCode::Char('-') | KeyCode::Char('_') => Some(Action::DecreaseOrderBookLevels),
+            // Back to markets
+            KeyCode::Backspace | KeyCode::Esc => Some(Action::SetView(View::Markets)),
+            _ => None,
+        }
     }
 
     fn handle_orders_view(&self, key: KeyEvent, snapshot: &StoreSnapshot) -> Option<Action> {

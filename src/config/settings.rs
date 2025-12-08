@@ -150,6 +150,8 @@ pub struct KeyBindings {
     pub refresh: String,
     /// Switch to markets view.
     pub markets: String,
+    /// Switch to orderbook view.
+    pub orderbook: String,
     /// Switch to orders view.
     pub orders: String,
     /// Switch to positions view.
@@ -177,11 +179,12 @@ impl Default for KeyBindings {
             back: "Esc".to_string(),
             refresh: "r".to_string(),
             markets: "1".to_string(),
-            orders: "2".to_string(),
-            positions: "3".to_string(),
-            portfolio: "4".to_string(),
+            orderbook: "2".to_string(),
+            orders: "3".to_string(),
+            positions: "4".to_string(),
+            portfolio: "5".to_string(),
             search: "/".to_string(),
-            place_order: "o".to_string(),
+            place_order: "p".to_string(),
             cancel_order: "x".to_string(),
         }
     }

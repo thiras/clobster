@@ -6,11 +6,15 @@
 mod app_state;
 mod market_state;
 mod order_state;
+mod orderbook_state;
 mod portfolio_state;
 
 pub use app_state::{AppMode, AppState, InputMode, View};
 pub use market_state::{Market, MarketState, MarketStatus, Outcome};
 pub use order_state::{Order, OrderState, OrderStatus};
+pub use orderbook_state::{
+    MarketOrderBook, OrderBook, OrderBookDisplayMode, OrderBookState, PriceLevel,
+};
 pub use portfolio_state::{Balance, PortfolioState, Position};
 
 use crate::error::Result;
@@ -40,6 +44,16 @@ pub enum Action {
     CancelOrder(String),
     OrderPlaced(Order),
     OrderCancelled(String),
+
+    // Orderbook actions
+    LoadOrderBook(String, Vec<String>), // market_id, token_ids
+    OrderBookLoaded(String, Vec<OrderBook>), // market_id, orderbooks
+    SetOrderBookLoading(String, bool),
+    SelectOrderBookMarket(String),
+    ToggleOrderBookOutcome,
+    CycleOrderBookDisplayMode,
+    IncreaseOrderBookLevels,
+    DecreaseOrderBookLevels,
 
     // Portfolio actions
     LoadPortfolio,
@@ -162,6 +176,8 @@ pub struct Store {
     pub markets: MarketState,
     /// Order state.
     pub orders: OrderState,
+    /// Orderbook state.
+    pub orderbook: OrderBookState,
     /// Portfolio state.
     pub portfolio: PortfolioState,
     /// Action sender for dispatching actions.
@@ -175,6 +191,7 @@ impl Store {
             app: AppState::default(),
             markets: MarketState::default(),
             orders: OrderState::default(),
+            orderbook: OrderBookState::new(),
             portfolio: PortfolioState::default(),
             action_tx,
         }
@@ -205,6 +222,10 @@ impl Store {
             Action::SelectMarket(index) => {
                 if index < self.markets.markets.len() {
                     self.markets.selected_index = Some(index);
+                    // Auto-select market for orderbook when market is selected
+                    if let Some(market) = self.markets.filtered_markets().get(index) {
+                        self.orderbook.selected_market_id = Some(market.id.clone());
+                    }
                 }
             }
             Action::SearchMarkets(query) => {
@@ -239,6 +260,35 @@ impl Store {
             Action::OrderCancelled(id) => {
                 self.orders.orders.retain(|o| o.id != id);
                 self.orders.loading = false;
+            }
+
+            // Orderbook actions
+            Action::LoadOrderBook(market_id, _token_ids) => {
+                self.orderbook.set_loading(&market_id, true);
+            }
+            Action::OrderBookLoaded(market_id, orderbooks) => {
+                for book in orderbooks {
+                    self.orderbook.update_orderbook(market_id.clone(), book);
+                }
+                self.orderbook.set_loading(&market_id, false);
+            }
+            Action::SetOrderBookLoading(market_id, loading) => {
+                self.orderbook.set_loading(&market_id, loading);
+            }
+            Action::SelectOrderBookMarket(market_id) => {
+                self.orderbook.selected_market_id = Some(market_id);
+            }
+            Action::ToggleOrderBookOutcome => {
+                self.orderbook.toggle_outcome();
+            }
+            Action::CycleOrderBookDisplayMode => {
+                self.orderbook.cycle_display_mode();
+            }
+            Action::IncreaseOrderBookLevels => {
+                self.orderbook.increase_levels();
+            }
+            Action::DecreaseOrderBookLevels => {
+                self.orderbook.decrease_levels();
             }
 
             // Portfolio actions

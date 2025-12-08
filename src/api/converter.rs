@@ -1,6 +1,8 @@
 //! Data conversion utilities for API responses.
 
-use crate::state::{Market, MarketStatus, Order, OrderSide, OrderStatus, OrderType, Outcome};
+use crate::state::{
+    Market, MarketStatus, Order, OrderBook, OrderSide, OrderStatus, OrderType, Outcome, PriceLevel,
+};
 use chrono::{DateTime, Utc};
 use polymarket_rs::types::Side;
 use rust_decimal::Decimal;
@@ -102,5 +104,36 @@ impl DataConverter {
             "EXPIRED" => OrderStatus::Expired,
             _ => OrderStatus::Pending,
         }
+    }
+
+    /// Convert a polymarket-rs orderbook summary to our internal OrderBook type.
+    pub fn convert_orderbook(summary: polymarket_rs::types::OrderBookSummary) -> OrderBook {
+        let bids = summary
+            .bids
+            .into_iter()
+            .map(|level| PriceLevel::new(level.price, level.size))
+            .collect();
+
+        let asks = summary
+            .asks
+            .into_iter()
+            .map(|level| PriceLevel::new(level.price, level.size))
+            .collect();
+
+        OrderBook {
+            token_id: summary.asset_id.clone(),
+            market_id: summary.market.clone(),
+            asset_id: summary.asset_id,
+            bids,
+            asks,
+            last_trade_price: None,
+            hash: summary.hash,
+            timestamp: DateTime::from_timestamp(summary.timestamp as i64, 0).unwrap_or_else(Utc::now),
+        }
+    }
+
+    /// Convert a polymarket-rs price level to our internal PriceLevel type.
+    pub fn convert_price_level(level: polymarket_rs::types::PriceLevel) -> PriceLevel {
+        PriceLevel::new(level.price, level.size)
     }
 }

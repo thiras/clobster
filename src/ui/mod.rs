@@ -6,7 +6,10 @@ mod layout;
 mod widgets;
 
 pub use layout::Layout;
-pub use widgets::{HelpPanel, MarketList, OrderList, PositionList, StatusBar, TabBar};
+pub use widgets::{
+    HelpPanel, MarketList, OrderBookSummaryWidget, OrderBookWidget, OrderList, PositionList,
+    StatusBar, TabBar,
+};
 
 use crate::state::Store;
 use ratatui::Frame;
@@ -29,6 +32,9 @@ impl Ui {
         match store.app.current_view {
             crate::state::View::Markets | crate::state::View::MarketDetail => {
                 MarketList::render(frame, layout.main_area, store);
+            }
+            crate::state::View::OrderBook => {
+                OrderBookWidget::render(frame, layout.main_area, store);
             }
             crate::state::View::Orders | crate::state::View::OrderEntry => {
                 OrderList::render(frame, layout.main_area, store);

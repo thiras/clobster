@@ -16,7 +16,7 @@ pub struct HelpPanel;
 impl HelpPanel {
     /// Render the help panel.
     pub fn render(frame: &mut Frame, area: Rect) {
-        let popup_area = centered_rect(60, 70, area);
+        let popup_area = centered_rect(60, 80, area);
 
         // Clear the area behind the popup
         frame.render_widget(Clear, popup_area);
@@ -67,15 +67,39 @@ impl HelpPanel {
             ]),
             Line::from(vec![
                 Span::styled("  2    ", Style::default().fg(Color::Cyan)),
-                Span::raw("Orders view"),
+                Span::raw("Order Book view"),
             ]),
             Line::from(vec![
                 Span::styled("  3    ", Style::default().fg(Color::Cyan)),
-                Span::raw("Positions view"),
+                Span::raw("Orders view"),
             ]),
             Line::from(vec![
                 Span::styled("  4    ", Style::default().fg(Color::Cyan)),
+                Span::raw("Positions view"),
+            ]),
+            Line::from(vec![
+                Span::styled("  5    ", Style::default().fg(Color::Cyan)),
                 Span::raw("Settings"),
+            ]),
+            Line::from(""),
+            Line::from(vec![Span::styled(
+                "Order Book",
+                Style::default()
+                    .fg(Color::Yellow)
+                    .add_modifier(Modifier::BOLD),
+            )]),
+            Line::from(""),
+            Line::from(vec![
+                Span::styled("  o    ", Style::default().fg(Color::Cyan)),
+                Span::raw("Toggle Yes/No outcome"),
+            ]),
+            Line::from(vec![
+                Span::styled("  m    ", Style::default().fg(Color::Cyan)),
+                Span::raw("Cycle display mode"),
+            ]),
+            Line::from(vec![
+                Span::styled("  +/-  ", Style::default().fg(Color::Cyan)),
+                Span::raw("Increase/decrease levels"),
             ]),
             Line::from(""),
             Line::from(vec![Span::styled(

@@ -2,8 +2,8 @@
 
 use crate::config::ApiConfig;
 use crate::error::{Error, Result};
-use crate::state::{Market, Order, OrderRequest, PortfolioState, Position};
-use polymarket_rs::types::{ConditionId, OpenOrderParams};
+use crate::state::{Market, Order, OrderBook, OrderRequest, PortfolioState, Position};
+use polymarket_rs::types::{ConditionId, OpenOrderParams, TokenId};
 use polymarket_rs::{ClobClient, TradingClient};
 use std::sync::Arc;
 use tokio::sync::RwLock;
@@ -117,6 +117,58 @@ impl ApiClient {
             .map_err(Error::Api)?;
 
         Ok(super::DataConverter::convert_market(market))
+    }
+
+    /// Fetch the orderbook for a token.
+    pub async fn fetch_orderbook(&self, token_id: &str) -> Result<OrderBook> {
+        self.rate_limit().await?;
+
+        let summary = self
+            .clob_client
+            .get_order_book(&TokenId::new(token_id))
+            .await
+            .map_err(Error::Api)?;
+
+        Ok(super::DataConverter::convert_orderbook(summary))
+    }
+
+    /// Fetch orderbooks for multiple tokens.
+    pub async fn fetch_orderbooks(&self, token_ids: &[String]) -> Result<Vec<OrderBook>> {
+        self.rate_limit().await?;
+
+        let params: Vec<polymarket_rs::types::BookParams> = token_ids
+            .iter()
+            .flat_map(|id| {
+                vec![
+                    polymarket_rs::types::BookParams::new(id, polymarket_rs::types::Side::Buy),
+                    polymarket_rs::types::BookParams::new(id, polymarket_rs::types::Side::Sell),
+                ]
+            })
+            .collect();
+
+        let summaries = self
+            .clob_client
+            .get_order_books(&params)
+            .await
+            .map_err(Error::Api)?;
+
+        Ok(summaries
+            .into_iter()
+            .map(super::DataConverter::convert_orderbook)
+            .collect())
+    }
+
+    /// Fetch the spread for a token (returns just the spread value, not bid/ask).
+    pub async fn fetch_spread(&self, token_id: &str) -> Result<rust_decimal::Decimal> {
+        self.rate_limit().await?;
+
+        let spread = self
+            .clob_client
+            .get_spread(&TokenId::new(token_id))
+            .await
+            .map_err(Error::Api)?;
+
+        Ok(spread.spread)
     }
 
     /// Fetch open orders (requires authentication).
