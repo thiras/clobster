@@ -2,8 +2,8 @@
 
 use crate::config::ApiConfig;
 use crate::error::{Error, Result};
-use crate::state::{Market, Order, OrderRequest, PortfolioState, Position};
-use polymarket_rs::types::{ConditionId, OpenOrderParams};
+use crate::state::{Market, Order, OrderBookDepth, OrderRequest, PortfolioState, Position};
+use polymarket_rs::types::{BookParams, ConditionId, OpenOrderParams, Side, TokenId};
 use polymarket_rs::{ClobClient, TradingClient};
 use std::sync::Arc;
 use tokio::sync::RwLock;
@@ -117,6 +117,43 @@ impl ApiClient {
             .map_err(Error::Api)?;
 
         Ok(super::DataConverter::convert_market(market))
+    }
+
+    /// Fetch order book for a token.
+    pub async fn fetch_orderbook(&self, token_id: &str) -> Result<OrderBookDepth> {
+        self.rate_limit().await?;
+
+        let book = self
+            .clob_client
+            .get_order_book(&TokenId::new(token_id))
+            .await
+            .map_err(Error::Api)?;
+
+        Ok(super::DataConverter::convert_orderbook(book))
+    }
+
+    /// Fetch multiple order books at once.
+    pub async fn fetch_orderbooks(
+        &self,
+        params: &[(String, Side)],
+    ) -> Result<Vec<OrderBookDepth>> {
+        self.rate_limit().await?;
+
+        let book_params: Vec<BookParams> = params
+            .iter()
+            .map(|(token_id, side)| BookParams::new(token_id, *side))
+            .collect();
+
+        let books = self
+            .clob_client
+            .get_order_books(&book_params)
+            .await
+            .map_err(Error::Api)?;
+
+        Ok(books
+            .into_iter()
+            .map(super::DataConverter::convert_orderbook)
+            .collect())
     }
 
     /// Fetch open orders (requires authentication).

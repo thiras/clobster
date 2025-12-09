@@ -6,11 +6,13 @@
 mod app_state;
 mod market_state;
 mod order_state;
+mod orderbook_state;
 mod portfolio_state;
 
 pub use app_state::{AppMode, AppState, InputMode, View};
 pub use market_state::{Market, MarketState, MarketStatus, Outcome};
 pub use order_state::{Order, OrderState, OrderStatus};
+pub use orderbook_state::{OrderBookDepth, OrderBookState, OrderBookStats, PriceLevel};
 pub use portfolio_state::{Balance, PortfolioState, Position};
 
 use crate::error::Result;
@@ -47,6 +49,14 @@ pub enum Action {
     LoadPositions,
     PositionsLoaded(Vec<Position>),
 
+    // Order book actions
+    LoadOrderBook(String),          // token_id
+    OrderBookLoaded(OrderBookDepth),
+    SelectOrderBook(String),        // token_id
+    ClearOrderBook(String),         // token_id
+    ClearAllOrderBooks,
+    SetOrderBookDepth(usize),       // display depth
+
     // UI actions
     ScrollUp,
     ScrollDown,
@@ -63,6 +73,7 @@ pub enum Action {
     RefreshMarkets,
     RefreshOrders,
     RefreshPortfolio,
+    RefreshOrderBook(String),      // token_id
 
     // Error handling
     SetError(String),
@@ -162,6 +173,8 @@ pub struct Store {
     pub markets: MarketState,
     /// Order state.
     pub orders: OrderState,
+    /// Order book state.
+    pub orderbooks: OrderBookState,
     /// Portfolio state.
     pub portfolio: PortfolioState,
     /// Action sender for dispatching actions.
@@ -175,6 +188,7 @@ impl Store {
             app: AppState::default(),
             markets: MarketState::default(),
             orders: OrderState::default(),
+            orderbooks: OrderBookState::default(),
             portfolio: PortfolioState::default(),
             action_tx,
         }
@@ -253,6 +267,25 @@ impl Store {
                 self.portfolio.loading = false;
             }
 
+            // Order book actions
+            Action::LoadOrderBook(_) => self.orderbooks.loading = true,
+            Action::OrderBookLoaded(book) => {
+                self.orderbooks.update_book(book);
+                self.orderbooks.loading = false;
+            }
+            Action::SelectOrderBook(token_id) => {
+                self.orderbooks.selected_token_id = Some(token_id);
+            }
+            Action::ClearOrderBook(token_id) => {
+                self.orderbooks.remove_book(&token_id);
+            }
+            Action::ClearAllOrderBooks => {
+                self.orderbooks.clear();
+            }
+            Action::SetOrderBookDepth(depth) => {
+                self.orderbooks.display_depth = depth;
+            }
+
             // UI actions
             Action::ScrollUp => self.scroll(-1),
             Action::ScrollDown => self.scroll(1),
@@ -272,7 +305,8 @@ impl Store {
             Action::RefreshAll
             | Action::RefreshMarkets
             | Action::RefreshOrders
-            | Action::RefreshPortfolio => {
+            | Action::RefreshPortfolio
+            | Action::RefreshOrderBook(_) => {
                 self.app.loading = true;
             }
 

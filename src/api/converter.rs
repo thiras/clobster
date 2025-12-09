@@ -1,6 +1,9 @@
 //! Data conversion utilities for API responses.
 
-use crate::state::{Market, MarketStatus, Order, OrderSide, OrderStatus, OrderType, Outcome};
+use crate::state::{
+    Market, MarketStatus, Order, OrderBookDepth, OrderSide, OrderStatus, OrderType, Outcome,
+    PriceLevel,
+};
 use chrono::{DateTime, Utc};
 use polymarket_rs::types::Side;
 use rust_decimal::Decimal;
@@ -101,6 +104,32 @@ impl DataConverter {
             "CANCELLED" | "CANCELED" => OrderStatus::Cancelled,
             "EXPIRED" => OrderStatus::Expired,
             _ => OrderStatus::Pending,
+        }
+    }
+
+    /// Convert a polymarket-rs order book summary to our internal OrderBookDepth type.
+    pub fn convert_orderbook(book: polymarket_rs::types::OrderBookSummary) -> OrderBookDepth {
+        let bids = book
+            .bids
+            .into_iter()
+            .map(|level| PriceLevel::new(level.price, level.size))
+            .collect();
+
+        let asks = book
+            .asks
+            .into_iter()
+            .map(|level| PriceLevel::new(level.price, level.size))
+            .collect();
+
+        let timestamp = DateTime::from_timestamp(book.timestamp as i64, 0).unwrap_or_else(Utc::now);
+
+        OrderBookDepth {
+            market_id: book.market,
+            token_id: book.asset_id,
+            hash: book.hash,
+            timestamp,
+            bids,
+            asks,
         }
     }
 }
