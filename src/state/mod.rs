@@ -283,7 +283,9 @@ impl Store {
                 self.orderbooks.clear();
             }
             Action::SetOrderBookDepth(depth) => {
-                self.orderbooks.display_depth = depth;
+                if depth > 0 && depth <= 100 {
+                    self.orderbooks.display_depth = depth;
+                }
             }
 
             // UI actions
