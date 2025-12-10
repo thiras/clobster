@@ -70,6 +70,15 @@ codegen-units = 4    # Faster parallel compilation
 strip = "none"       # No need to strip in CI
 opt-level = 2        # Good optimization, faster than "z"
 
+# CI profile for test builds - optimized for fast compilation
+[profile.ci-test]
+inherits = "dev"
+opt-level = 0        # No optimization for fast builds
+debug = 0            # Minimal debug info
+strip = "none"
+lto = false
+codegen-units = 256  # Maximum parallelism
+
 [profile.release]
 lto = true
 codegen-units = 1
