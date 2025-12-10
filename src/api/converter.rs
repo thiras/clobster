@@ -121,7 +121,9 @@ impl DataConverter {
             .map(|level| PriceLevel::new(level.price, level.size))
             .collect();
 
-        let timestamp = DateTime::from_timestamp(book.timestamp as i64, 0).unwrap_or_else(Utc::now);
+        // API timestamp is in milliseconds, convert to seconds for DateTime
+        let timestamp =
+            DateTime::from_timestamp_millis(book.timestamp as i64).unwrap_or_else(Utc::now);
 
         OrderBookDepth {
             market_id: book.market,
