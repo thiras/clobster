@@ -103,38 +103,22 @@ impl OrderBookDepth {
 
     /// Calculate total bid liquidity up to a certain depth.
     pub fn bid_liquidity(&self, depth: usize) -> Decimal {
-        self.bids
-            .iter()
-            .take(depth)
-            .map(|l| l.value())
-            .sum()
+        self.bids.iter().take(depth).map(|l| l.value()).sum()
     }
 
     /// Calculate total ask liquidity up to a certain depth.
     pub fn ask_liquidity(&self, depth: usize) -> Decimal {
-        self.asks
-            .iter()
-            .take(depth)
-            .map(|l| l.value())
-            .sum()
+        self.asks.iter().take(depth).map(|l| l.value()).sum()
     }
 
     /// Calculate total bid volume (size) up to a certain depth.
     pub fn bid_volume(&self, depth: usize) -> Decimal {
-        self.bids
-            .iter()
-            .take(depth)
-            .map(|l| l.size)
-            .sum()
+        self.bids.iter().take(depth).map(|l| l.size).sum()
     }
 
     /// Calculate total ask volume (size) up to a certain depth.
     pub fn ask_volume(&self, depth: usize) -> Decimal {
-        self.asks
-            .iter()
-            .take(depth)
-            .map(|l| l.size)
-            .sum()
+        self.asks.iter().take(depth).map(|l| l.size).sum()
     }
 
     /// Calculate total liquidity (bid + ask) up to a certain depth.
@@ -149,7 +133,7 @@ impl OrderBookDepth {
         let bid_vol = self.bid_volume(depth);
         let ask_vol = self.ask_volume(depth);
         let total = bid_vol + ask_vol;
-        
+
         if total.is_zero() {
             None
         } else {

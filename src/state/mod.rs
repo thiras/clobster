@@ -50,12 +50,12 @@ pub enum Action {
     PositionsLoaded(Vec<Position>),
 
     // Order book actions
-    LoadOrderBook(String),          // token_id
+    LoadOrderBook(String), // token_id
     OrderBookLoaded(OrderBookDepth),
-    SelectOrderBook(String),        // token_id
-    ClearOrderBook(String),         // token_id
+    SelectOrderBook(String), // token_id
+    ClearOrderBook(String),  // token_id
     ClearAllOrderBooks,
-    SetOrderBookDepth(usize),       // display depth
+    SetOrderBookDepth(usize), // display depth
 
     // UI actions
     ScrollUp,
@@ -73,7 +73,7 @@ pub enum Action {
     RefreshMarkets,
     RefreshOrders,
     RefreshPortfolio,
-    RefreshOrderBook(String),      // token_id
+    RefreshOrderBook(String), // token_id
 
     // Error handling
     SetError(String),

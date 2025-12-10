@@ -102,17 +102,26 @@ impl OrderBook {
             ]),
             Line::from(vec![
                 Span::styled("Spread: ", Style::default().fg(Color::Gray)),
-                Span::styled(format!("{} ({})", spread, spread_pct), Style::default().fg(Color::Cyan)),
+                Span::styled(
+                    format!("{} ({})", spread, spread_pct),
+                    Style::default().fg(Color::Cyan),
+                ),
                 Span::raw("  │  "),
                 Span::styled("Imbalance: ", Style::default().fg(Color::Gray)),
                 Span::styled(&imbalance, Style::default().fg(imbalance_color)),
             ]),
             Line::from(vec![
                 Span::styled("Bid Depth: ", Style::default().fg(Color::Gray)),
-                Span::styled(format!("{}", book.bid_depth()), Style::default().fg(Color::Green)),
+                Span::styled(
+                    format!("{}", book.bid_depth()),
+                    Style::default().fg(Color::Green),
+                ),
                 Span::raw("  │  "),
                 Span::styled("Ask Depth: ", Style::default().fg(Color::Gray)),
-                Span::styled(format!("{}", book.ask_depth()), Style::default().fg(Color::Red)),
+                Span::styled(
+                    format!("{}", book.ask_depth()),
+                    Style::default().fg(Color::Red),
+                ),
             ]),
         ];
 
@@ -140,15 +149,13 @@ impl OrderBook {
 
     /// Render bid side of the order book.
     fn render_bids(frame: &mut Frame, area: Rect, book: &OrderBookDepth, depth: usize) {
-        let header_cells = ["Price", "Size", "Total"]
-            .iter()
-            .map(|h| {
-                Cell::from(*h).style(
-                    Style::default()
-                        .fg(Color::Yellow)
-                        .add_modifier(Modifier::BOLD),
-                )
-            });
+        let header_cells = ["Price", "Size", "Total"].iter().map(|h| {
+            Cell::from(*h).style(
+                Style::default()
+                    .fg(Color::Yellow)
+                    .add_modifier(Modifier::BOLD),
+            )
+        });
         let header = Row::new(header_cells).height(1).bottom_margin(1);
 
         // Calculate cumulative totals
@@ -160,7 +167,10 @@ impl OrderBook {
             let fill_pct = if max_cumulative.is_zero() {
                 0.0
             } else {
-                (cumulative / max_cumulative).to_string().parse::<f64>().unwrap_or(0.0)
+                (cumulative / max_cumulative)
+                    .to_string()
+                    .parse::<f64>()
+                    .unwrap_or(0.0)
             };
 
             // Create a visual bar based on cumulative size
@@ -199,15 +209,13 @@ impl OrderBook {
 
     /// Render ask side of the order book.
     fn render_asks(frame: &mut Frame, area: Rect, book: &OrderBookDepth, depth: usize) {
-        let header_cells = ["Price", "Size", "Total"]
-            .iter()
-            .map(|h| {
-                Cell::from(*h).style(
-                    Style::default()
-                        .fg(Color::Yellow)
-                        .add_modifier(Modifier::BOLD),
-                )
-            });
+        let header_cells = ["Price", "Size", "Total"].iter().map(|h| {
+            Cell::from(*h).style(
+                Style::default()
+                    .fg(Color::Yellow)
+                    .add_modifier(Modifier::BOLD),
+            )
+        });
         let header = Row::new(header_cells).height(1).bottom_margin(1);
 
         // Calculate cumulative totals
@@ -219,7 +227,10 @@ impl OrderBook {
             let fill_pct = if max_cumulative.is_zero() {
                 0.0
             } else {
-                (cumulative / max_cumulative).to_string().parse::<f64>().unwrap_or(0.0)
+                (cumulative / max_cumulative)
+                    .to_string()
+                    .parse::<f64>()
+                    .unwrap_or(0.0)
             };
 
             // Create a visual bar based on cumulative size

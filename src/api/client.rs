@@ -133,10 +133,7 @@ impl ApiClient {
     }
 
     /// Fetch multiple order books at once.
-    pub async fn fetch_orderbooks(
-        &self,
-        params: &[(String, Side)],
-    ) -> Result<Vec<OrderBookDepth>> {
+    pub async fn fetch_orderbooks(&self, params: &[(String, Side)]) -> Result<Vec<OrderBookDepth>> {
         self.rate_limit().await?;
 
         let book_params: Vec<BookParams> = params
