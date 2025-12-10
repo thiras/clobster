@@ -142,13 +142,23 @@ impl OrderBookDepth {
     }
 
     /// Calculate Volume Weighted Average Price (VWAP) for buys.
+    ///
     /// Returns the average price to buy `size` shares.
+    ///
+    /// Returns `None` if there is no available liquidity. If the requested
+    /// `size` exceeds available ask liquidity, returns the VWAP for the
+    /// maximum available size (partial fill).
     pub fn vwap_buy(&self, size: Decimal) -> Option<Decimal> {
         self.calculate_vwap(&self.asks, size)
     }
 
     /// Calculate Volume Weighted Average Price (VWAP) for sells.
+    ///
     /// Returns the average price to sell `size` shares.
+    ///
+    /// Returns `None` if there is no available liquidity. If the requested
+    /// `size` exceeds available bid liquidity, returns the VWAP for the
+    /// maximum available size (partial fill).
     pub fn vwap_sell(&self, size: Decimal) -> Option<Decimal> {
         self.calculate_vwap(&self.bids, size)
     }
