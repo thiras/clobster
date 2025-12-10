@@ -1,0 +1,61 @@
+# Clobster
+
+**Clobster** is a production-grade terminal user interface (TUI) framework for [Polymarket](https://polymarket.com) prediction markets. Built with [Rust](https://rust-lang.org), [ratatui](https://ratatui.rs), and [polymarket-rs](https://crates.io/crates/polymarket-rs).
+
+## Features
+
+- 🖥️ **Modern TUI** - Beautiful terminal interface with vim-style navigation
+- 📊 **Real-time Data** - Live market updates via WebSocket
+- 🤖 **Programmable Strategies** - Build and deploy custom trading strategies
+- ⚡ **High Performance** - Built in Rust for speed and reliability
+- 🛡️ **Risk Management** - Built-in guards and position limits
+
+## Quick Example
+
+```rust
+use clobster::strategy::{Strategy, StrategyContext, Signal};
+
+struct MyStrategy {
+    threshold: f64,
+}
+
+impl Strategy for MyStrategy {
+    fn name(&self) -> &str { "my_strategy" }
+
+    fn evaluate(&mut self, ctx: &StrategyContext) -> Vec<Signal> {
+        let mut signals = vec![];
+        for market in ctx.markets() {
+            if let Some(outcome) = market.outcomes.first() {
+                if outcome.price < self.threshold {
+                    signals.push(Signal::buy(
+                        market.id.clone(),
+                        outcome.token_id.clone(),
+                        0.10,
+                    ));
+                }
+            }
+        }
+        signals
+    }
+}
+```
+
+## Architecture at a Glance
+
+Clobster follows a **unidirectional data flow** pattern:
+
+```mermaid
+flowchart LR
+    A[Events] --> B[Actions]
+    B --> C[Store]
+    C --> D[UI]
+    D --> A
+```
+
+## Project Status
+
+Clobster is under active development. See the [GitHub repository](https://github.com/thiras/clobster) for the latest updates.
+
+## License
+
+Clobster is licensed under the MIT License.
