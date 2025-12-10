@@ -12,7 +12,7 @@ use async_trait::async_trait;
 #[derive(Debug)]
 pub struct MyStrategy {
     name: String,
-    threshold: f64,
+    threshold: Decimal,
     // Your custom state
 }
 
@@ -24,7 +24,7 @@ impl Strategy for MyStrategy {
 
     fn evaluate(&mut self, ctx: &StrategyContext) -> Vec<Signal> {
         let mut signals = vec![];
-        
+
         for market in ctx.markets() {
             // Your logic here
             if self.should_buy(market) {
@@ -32,7 +32,7 @@ impl Strategy for MyStrategy {
                     Signal::buy(
                         market.id.clone(),
                         market.outcomes[0].token_id.clone(),
-                        0.10,
+                        dec!(0.10),
                     )
                 );
             }

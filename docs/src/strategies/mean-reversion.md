@@ -58,13 +58,13 @@ let strategy = MeanReversionStrategy::builder()
 
 ```rust
 // Price significantly below average
-Signal::buy("market_456", "token_yes", 0.10)
+Signal::buy("market_456", "token_yes", dec!(0.10))
     .with_limit_price(dec!(0.35))
     .with_strength(SignalStrength::Strong)
     .with_reason("Z-score: -2.3, price likely to revert")
 
 // Price returned to mean
-Signal::sell("market_456", "token_yes", 0.10)
+Signal::sell("market_456", "token_yes", dec!(0.10))
     .with_strength(SignalStrength::Medium)
     .with_reason("Z-score: 0.4, mean reversion complete")
 ```

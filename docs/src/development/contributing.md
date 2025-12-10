@@ -27,7 +27,7 @@ Be respectful and constructive. We're all here to build great software.
 
 ### Prerequisites
 
-- Rust 1.75+ (2024 edition)
+- Rust 1.85+ (2024 edition)
 - Git with GPG signing configured (for commits)
 
 ### Build and Test

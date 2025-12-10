@@ -2,7 +2,7 @@
 
 ## Requirements
 
-- Rust 1.75+ (2024 edition)
+- Rust 1.85+ (2024 edition)
 - A Polymarket account with API credentials
 
 ## From Source

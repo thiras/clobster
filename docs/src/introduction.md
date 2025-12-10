@@ -14,9 +14,11 @@
 
 ```rust
 use clobster::strategy::{Strategy, StrategyContext, Signal};
+use rust_decimal::Decimal;
+use rust_decimal_macros::dec;
 
 struct MyStrategy {
-    threshold: f64,
+    threshold: Decimal,
 }
 
 impl Strategy for MyStrategy {
@@ -30,7 +32,7 @@ impl Strategy for MyStrategy {
                     signals.push(Signal::buy(
                         market.id.clone(),
                         outcome.token_id.clone(),
-                        0.10,
+                        dec!(0.10),
                     ));
                 }
             }

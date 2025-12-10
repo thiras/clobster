@@ -78,19 +78,19 @@ Where:
 - $\alpha$ = Skew factor
 - $I$ = Current inventory (positive = long)
 
-When long, bids are lowered and asks are lowered to encourage selling.
+When long, asks are lowered to encourage selling (reducing inventory), and bids are also lowered to discourage further buying.
 
 ## Example Signals
 
 ```rust
 // Place bid inside spread
-Signal::buy("market_789", "token_yes", 10.0)
+Signal::buy("market_789", "token_yes", dec!(10.0))
     .with_limit_price(dec!(0.46))
     .with_strength(SignalStrength::Low)
     .with_reason("Spread capture: bid inside 0.45/0.48")
 
 // Place ask to close position
-Signal::sell("market_789", "token_yes", 10.0)
+Signal::sell("market_789", "token_yes", dec!(10.0))
     .with_limit_price(dec!(0.47))
     .with_strength(SignalStrength::Low)
     .with_reason("Spread capture: ask inside 0.45/0.48")

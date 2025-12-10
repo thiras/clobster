@@ -56,12 +56,12 @@ let strategy = MomentumStrategy::builder()
 
 ```rust
 // Strong upward momentum detected
-Signal::buy("market_123", "token_yes", 0.10)
+Signal::buy("market_123", "token_yes", dec!(0.10))
     .with_strength(SignalStrength::Strong)
     .with_reason("Momentum: +8.5% over 10 periods")
 
 // Momentum reversal detected
-Signal::sell("market_123", "token_yes", 0.10)
+Signal::sell("market_123", "token_yes", dec!(0.10))
     .with_strength(SignalStrength::Medium)
     .with_reason("Momentum reversed: -3.2%")
 ```
