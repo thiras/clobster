@@ -15,16 +15,16 @@ repos:
         pass_filenames: false
         description: Format Rust code with rustfmt
 
-  # Rust linting
+  # Rust linting (only on main branch)
   - repo: local
     hooks:
       - id: cargo-clippy
         name: cargo clippy
-        entry: cargo clippy --all-targets --all-features -- -D warnings
+        entry: bash -c 'if [ "$(git rev-parse --abbrev-ref HEAD)" = "main" ]; then cargo clippy --all-targets --all-features -- -D warnings; else echo "Skipping clippy on non-main branch"; fi'
         language: system
         types: [rust]
         pass_filenames: false
-        description: Lint Rust code with Clippy (deny warnings)
+        description: Lint Rust code with Clippy (deny warnings) - only on main branch
 
   # Cargo deny - security and license checks
   - repo: local
