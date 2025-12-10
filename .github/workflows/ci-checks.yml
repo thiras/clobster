@@ -38,6 +38,8 @@ jobs:
   docs:
     name: Documentation Build
     runs-on: ubuntu-latest
+    env:
+      RUSTC_WRAPPER: ""  # Disable sccache for docs build
     steps:
       - name: Checkout
         uses: actions/checkout@v4
