@@ -18,7 +18,13 @@ crossterm = "0.28"
 polymarket-rs = "0.1.5"
 
 # Async Runtime
-tokio = { version = "1.41", features = ["full", "rt-multi-thread", "macros", "sync", "time"] }
+tokio = { version = "1.41", features = [
+    "full",
+    "rt-multi-thread",
+    "macros",
+    "sync",
+    "time",
+] }
 tokio-stream = "0.1"
 futures = "0.3"
 
@@ -55,6 +61,14 @@ alloy-signer-local = "0.6"
 pretty_assertions = "1.4"
 mockall = "0.13"
 tokio-test = "0.4"
+
+# CI profile - for clippy/lint (release-like to catch optimization issues)
+[profile.ci]
+inherits = "release"
+lto = "thin"         # Much faster than full LTO
+codegen-units = 4    # Faster parallel compilation
+strip = "none"       # No need to strip in CI
+opt-level = 2        # Good optimization, faster than "z"
 
 [profile.release]
 lto = true
