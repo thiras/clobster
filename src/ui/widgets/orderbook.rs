@@ -8,6 +8,7 @@ use ratatui::{
     widgets::{Bar, BarChart, BarGroup, Block, Borders, Cell, Paragraph, Row, Table},
 };
 use rust_decimal::Decimal;
+use rust_decimal::prelude::ToPrimitive;
 
 use crate::state::{OrderBookDepth, Store};
 
@@ -167,10 +168,7 @@ impl OrderBook {
             let fill_pct = if max_cumulative.is_zero() {
                 0.0
             } else {
-                (cumulative / max_cumulative)
-                    .to_string()
-                    .parse::<f64>()
-                    .unwrap_or(0.0)
+                (cumulative / max_cumulative).to_f64().unwrap_or(0.0)
             };
 
             // Create a visual bar based on cumulative size
@@ -227,10 +225,7 @@ impl OrderBook {
             let fill_pct = if max_cumulative.is_zero() {
                 0.0
             } else {
-                (cumulative / max_cumulative)
-                    .to_string()
-                    .parse::<f64>()
-                    .unwrap_or(0.0)
+                (cumulative / max_cumulative).to_f64().unwrap_or(0.0)
             };
 
             // Create a visual bar based on cumulative size
@@ -458,8 +453,7 @@ impl OrderBookChart {
                     0
                 } else {
                     ((*vol / max_vol) * Decimal::from(100))
-                        .to_string()
-                        .parse::<u64>()
+                        .to_u64()
                         .unwrap_or(0)
                 };
                 Bar::default()
@@ -496,8 +490,7 @@ impl OrderBookChart {
                     0
                 } else {
                     ((*vol / max_vol) * Decimal::from(100))
-                        .to_string()
-                        .parse::<u64>()
+                        .to_u64()
                         .unwrap_or(0)
                 };
                 Bar::default()
