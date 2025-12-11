@@ -4,7 +4,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Rust](https://img.shields.io/badge/rust-1.85%2B-orange.svg)](https://www.rust-lang.org)
 
-**Clobster** is a production-grade terminal user interface (TUI) framework for [Polymarket](https://polymarket.com) prediction markets. Built with [Rust](https://rust-lang.org), [ratatui](https://ratatui.rs), and [polymarket-rs](https://crates.io/crates/polymarket-rs).
+**Clobster** is a terminal user interface (TUI) framework for [Polymarket](https://polymarket.com) prediction markets. Built with [Rust](https://rust-lang.org), [ratatui](https://ratatui.rs), and [polymarket-rs](https://crates.io/crates/polymarket-rs).
 
 <!-- ![Clobster Demo](docs/demo.gif) -->
 
