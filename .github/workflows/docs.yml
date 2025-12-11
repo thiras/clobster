@@ -1,11 +1,11 @@
 name: Deploy Documentation
 
 on:
-#   push:
-#     branches: [main]
-#     paths:
-#       - 'docs/**'
-#       - '.github/workflows/docs.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'docs/**'
+      - '.github/workflows/docs.yml'
   workflow_dispatch:
 
 permissions:
@@ -34,15 +34,15 @@ jobs:
           path: |
             ~/.cargo/bin/mdbook
             ~/.cargo/bin/mdbook-mermaid
-          key: ${{ runner.os }}-mdbook-bins-v2
-          restore-keys: |
-            ${{ runner.os }}-mdbook-bins-
+            ~/.cargo/bin/mdbook-katex
+          key: mdbook-bins-v3
 
       - name: Install mdBook tools
         if: steps.mdbook-cache.outputs.cache-hit != 'true'
         run: |
           cargo install mdbook --version 0.4.48 --locked
           cargo install mdbook-mermaid --locked
+          cargo install mdbook-katex --locked
 
       - name: Install Mermaid support
         run: |
@@ -59,10 +59,15 @@ jobs:
         with:
           path: ./docs/book
 
-  # deploy:
-  #   needs: build
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Deploy to GitHub Pages
-  #       id: deployment
-  #       uses: actions/deploy-pages@v4
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.repository == 'thiras/clobster'
+    timeout-minutes: 10
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
