@@ -13,6 +13,7 @@ pub use help::HelpPanel;
 pub use market_list::MarketList;
 pub use notifications::{render_error, render_notification};
 pub use order_list::OrderList;
+// Allow unused until orderbook widgets are integrated with UI layout
 #[allow(unused_imports)]
 pub use orderbook::{OrderBook, OrderBookChart, OrderBookCompact};
 pub use position_list::PositionList;

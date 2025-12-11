@@ -1,5 +1,10 @@
 //! Order book depth widget.
+//!
+//! This module provides order book visualization widgets that are part of the
+//! orderbook feature being added. The widgets will be integrated with the UI
+//! layout once the feature is complete.
 
+// Allow dead_code temporarily until these widgets are integrated with the UI layout
 #![allow(dead_code)]
 
 use ratatui::{
@@ -68,8 +73,9 @@ impl OrderBook {
             .spread_percent()
             .map(|s| format!("{:.2}%", s))
             .unwrap_or_else(|| "-".to_string());
-        let imbalance = book
-            .imbalance(depth)
+        // Cache imbalance value to avoid duplicate calculation
+        let imbalance_value = book.imbalance(depth);
+        let imbalance = imbalance_value
             .map(|i| {
                 let pct = i * Decimal::ONE_HUNDRED;
                 if i > Decimal::ZERO {
@@ -82,7 +88,7 @@ impl OrderBook {
             })
             .unwrap_or_else(|| "-".to_string());
 
-        let imbalance_color = book.imbalance(depth).map_or(Color::Gray, |i| {
+        let imbalance_color = imbalance_value.map_or(Color::Gray, |i| {
             if i > Decimal::ZERO {
                 Color::Green
             } else if i < Decimal::ZERO {
@@ -161,12 +167,19 @@ impl OrderBook {
         });
         let header = Row::new(header_cells).height(1).bottom_margin(1);
 
-        // Calculate cumulative totals
-        let mut cumulative = Decimal::ZERO;
+        // Pre-calculate cumulative totals to avoid mutable state in map closure
         let max_cumulative = book.bid_volume(depth);
+        let cumulative_levels: Vec<_> = book
+            .bids
+            .iter()
+            .take(depth)
+            .scan(Decimal::ZERO, |cumulative, level| {
+                *cumulative += level.size;
+                Some((level, *cumulative))
+            })
+            .collect();
 
-        let rows = book.bids.iter().take(depth).map(|level| {
-            cumulative += level.size;
+        let rows = cumulative_levels.into_iter().map(|(level, cumulative)| {
             let fill_pct = if max_cumulative.is_zero() {
                 0.0
             } else {
@@ -218,12 +231,19 @@ impl OrderBook {
         });
         let header = Row::new(header_cells).height(1).bottom_margin(1);
 
-        // Calculate cumulative totals
-        let mut cumulative = Decimal::ZERO;
+        // Pre-calculate cumulative totals to avoid mutable state in map closure
         let max_cumulative = book.ask_volume(depth);
+        let cumulative_levels: Vec<_> = book
+            .asks
+            .iter()
+            .take(depth)
+            .scan(Decimal::ZERO, |cumulative, level| {
+                *cumulative += level.size;
+                Some((level, *cumulative))
+            })
+            .collect();
 
-        let rows = book.asks.iter().take(depth).map(|level| {
-            cumulative += level.size;
+        let rows = cumulative_levels.into_iter().map(|(level, cumulative)| {
             let fill_pct = if max_cumulative.is_zero() {
                 0.0
             } else {

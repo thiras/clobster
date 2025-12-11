@@ -175,6 +175,8 @@ pub struct OrderBookState {
     pub last_updated: Option<DateTime<Utc>>,
     /// Display depth (number of levels to show)
     pub display_depth: usize,
+    /// Last error encountered when updating order books
+    pub error: Option<String>,
 }
 
 impl OrderBookState {

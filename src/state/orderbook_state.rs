@@ -351,6 +351,7 @@ impl OrderBookState {
     pub fn clear(&mut self) {
         self.books.clear();
         self.selected_token_id = None;
+        self.error = None;
     }
 
     /// Get stats for a specific token.

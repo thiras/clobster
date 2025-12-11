@@ -133,6 +133,13 @@ impl ApiClient {
     }
 
     /// Fetch multiple order books at once.
+    ///
+    /// # Arguments
+    /// * `params` - Array of tuples containing (token_id, side). The `Side` parameter
+    ///   is required by the Polymarket CLOB API's `get_order_books` endpoint to specify
+    ///   the perspective for the order book data. Despite order books containing both
+    ///   bids and asks regardless of side, this parameter affects how the API normalizes
+    ///   the response data.
     pub async fn fetch_orderbooks(&self, params: &[(String, Side)]) -> Result<Vec<OrderBookDepth>> {
         self.rate_limit().await?;
 
