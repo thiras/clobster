@@ -11,6 +11,7 @@ pub struct Store {
     pub app: AppState,
     pub markets: MarketState,
     pub orders: OrderState,
+    pub orderbooks: OrderBookState,
     pub portfolio: PortfolioState,
 }
 ```
@@ -63,6 +64,15 @@ pub enum Action {
     PortfolioLoaded(PortfolioState),
     LoadPositions,
     PositionsLoaded(Vec<Position>),
+
+    // Order book actions
+    LoadOrderBook(String),           // token_id
+    OrderBookLoaded(OrderBookDepth),
+    SelectOrderBook(String),         // token_id
+    ClearOrderBook(String),          // token_id
+    ClearAllOrderBooks,
+    SetOrderBookDepth(usize),        // display depth
+    RefreshOrderBook(String),        // token_id
 
     // UI actions
     ScrollUp,

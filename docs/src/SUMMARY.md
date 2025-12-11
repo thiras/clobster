@@ -28,6 +28,7 @@
 
 - [Core Types](./api/core-types.md)
 - [State Module](./api/state.md)
+- [Order Book](./api/orderbook.md)
 - [Strategy Module](./api/strategy.md)
 
 # Development
