@@ -1,0 +1,29 @@
+# nextest configuration
+# https://nextest.io/docs/configuration/
+
+[store]
+# Directory for storing nextest data (relative to workspace root)
+dir = "target/nextest"
+
+[profile.default]
+# Number of retries for flaky tests
+retries = 0
+# Fail fast by default for local development
+fail-fast = true
+# Test timeout
+slow-timeout = { period = "60s", terminate-after = 2 }
+
+[profile.ci]
+# CI profile - run all tests even if some fail
+retries = 2
+fail-fast = false
+# More lenient timeout for CI
+slow-timeout = { period = "120s", terminate-after = 2 }
+# Status level to show (pass, skip, fail, retry, slow, leak)
+status-level = "skip"
+# Final status level
+final-status-level = "flaky"
+
+[profile.ci.junit]
+# Generate JUnit XML for CI reporting
+path = "target/nextest/ci/junit.xml"
