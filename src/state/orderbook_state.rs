@@ -364,3 +364,201 @@ impl OrderBookState {
         self.books.keys().collect()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use rust_decimal_macros::dec;
+
+    fn create_test_orderbook() -> OrderBookDepth {
+        let mut book = OrderBookDepth::new("market_1", "token_1");
+        // Bids: descending price order (best bid first)
+        book.bids = vec![
+            PriceLevel::new(dec!(0.50), dec!(100.0)),
+            PriceLevel::new(dec!(0.49), dec!(200.0)),
+            PriceLevel::new(dec!(0.48), dec!(150.0)),
+        ];
+        // Asks: ascending price order (best ask first)
+        book.asks = vec![
+            PriceLevel::new(dec!(0.52), dec!(80.0)),
+            PriceLevel::new(dec!(0.53), dec!(120.0)),
+            PriceLevel::new(dec!(0.54), dec!(100.0)),
+        ];
+        book
+    }
+
+    #[test]
+    fn test_price_level_value() {
+        let level = PriceLevel::new(dec!(0.50), dec!(100.0));
+        assert_eq!(level.value(), dec!(50.0));
+    }
+
+    #[test]
+    fn test_best_bid_ask() {
+        let book = create_test_orderbook();
+        assert_eq!(book.best_bid_price(), Some(dec!(0.50)));
+        assert_eq!(book.best_ask_price(), Some(dec!(0.52)));
+    }
+
+    #[test]
+    fn test_mid_price() {
+        let book = create_test_orderbook();
+        // (0.50 + 0.52) / 2 = 0.51
+        assert_eq!(book.mid_price(), Some(dec!(0.51)));
+    }
+
+    #[test]
+    fn test_spread() {
+        let book = create_test_orderbook();
+        // 0.52 - 0.50 = 0.02
+        assert_eq!(book.spread(), Some(dec!(0.02)));
+    }
+
+    #[test]
+    fn test_spread_percent() {
+        let book = create_test_orderbook();
+        // spread = 0.02, mid = 0.51
+        // spread_percent = (0.02 / 0.51) * 100 ≈ 3.92%
+        let spread_pct = book.spread_percent().unwrap();
+        assert!(spread_pct > dec!(3.9) && spread_pct < dec!(4.0));
+    }
+
+    #[test]
+    fn test_bid_volume() {
+        let book = create_test_orderbook();
+        // All bids: 100 + 200 + 150 = 450
+        assert_eq!(book.bid_volume(10), dec!(450.0));
+        // First 2 levels: 100 + 200 = 300
+        assert_eq!(book.bid_volume(2), dec!(300.0));
+    }
+
+    #[test]
+    fn test_ask_volume() {
+        let book = create_test_orderbook();
+        // All asks: 80 + 120 + 100 = 300
+        assert_eq!(book.ask_volume(10), dec!(300.0));
+    }
+
+    #[test]
+    fn test_imbalance() {
+        let book = create_test_orderbook();
+        // bid_vol = 450, ask_vol = 300
+        // imbalance = (450 - 300) / (450 + 300) = 150 / 750 = 0.2
+        assert_eq!(book.imbalance(10), Some(dec!(0.2)));
+    }
+
+    #[test]
+    fn test_vwap_buy_single_level() {
+        let book = create_test_orderbook();
+        // Buy 50 shares - fits in first ask level at 0.52
+        assert_eq!(book.vwap_buy(dec!(50.0)), Some(dec!(0.52)));
+    }
+
+    #[test]
+    fn test_vwap_buy_multiple_levels() {
+        let book = create_test_orderbook();
+        // Buy 100 shares:
+        // 80 @ 0.52 = 41.6
+        // 20 @ 0.53 = 10.6
+        // Total: 52.2 / 100 = 0.522
+        assert_eq!(book.vwap_buy(dec!(100.0)), Some(dec!(0.522)));
+    }
+
+    #[test]
+    fn test_vwap_buy_partial_fill() {
+        let book = create_test_orderbook();
+        // Try to buy 500 shares but only 300 available
+        // Should return VWAP for partial fill (300 shares)
+        // 80 @ 0.52 + 120 @ 0.53 + 100 @ 0.54 = 41.6 + 63.6 + 54 = 159.2
+        // 159.2 / 300 = 0.5306666...
+        let vwap = book.vwap_buy(dec!(500.0)).unwrap();
+        assert!(vwap > dec!(0.53) && vwap < dec!(0.532));
+    }
+
+    #[test]
+    fn test_vwap_sell_single_level() {
+        let book = create_test_orderbook();
+        // Sell 50 shares - fits in first bid level at 0.50
+        assert_eq!(book.vwap_sell(dec!(50.0)), Some(dec!(0.50)));
+    }
+
+    #[test]
+    fn test_vwap_empty_book() {
+        let book = OrderBookDepth::new("market_1", "token_1");
+        assert_eq!(book.vwap_buy(dec!(100.0)), None);
+        assert_eq!(book.vwap_sell(dec!(100.0)), None);
+    }
+
+    #[test]
+    fn test_slippage_buy() {
+        let book = create_test_orderbook();
+        // Buy 100 shares: VWAP = 0.522, best ask = 0.52
+        // Slippage = ((0.522 - 0.52) / 0.52) * 100 ≈ 0.38%
+        let slippage = book.slippage_buy(dec!(100.0)).unwrap();
+        assert!(slippage > dec!(0.3) && slippage < dec!(0.5));
+    }
+
+    #[test]
+    fn test_slippage_sell() {
+        let book = create_test_orderbook();
+        // Sell 150 shares: 100 @ 0.50 + 50 @ 0.49
+        // VWAP = (50 + 24.5) / 150 = 74.5 / 150 = 0.4966...
+        // Best bid = 0.50
+        // Slippage = ((0.50 - 0.4966) / 0.50) * 100 ≈ 0.66%
+        let slippage = book.slippage_sell(dec!(150.0)).unwrap();
+        assert!(slippage > dec!(0.5) && slippage < dec!(0.8));
+    }
+
+    #[test]
+    fn test_cumulative_bids() {
+        let book = create_test_orderbook();
+        let cumulative = book.cumulative_bids();
+        assert_eq!(cumulative.len(), 3);
+        assert_eq!(cumulative[0], (dec!(0.50), dec!(100.0)));
+        assert_eq!(cumulative[1], (dec!(0.49), dec!(300.0)));
+        assert_eq!(cumulative[2], (dec!(0.48), dec!(450.0)));
+    }
+
+    #[test]
+    fn test_orderbook_state() {
+        let mut state = OrderBookState::new();
+        assert!(state.books.is_empty());
+        assert_eq!(state.display_depth, 10);
+
+        let book = create_test_orderbook();
+        state.update_book(book);
+
+        assert_eq!(state.books.len(), 1);
+        assert!(state.get_book("token_1").is_some());
+        assert!(state.last_updated.is_some());
+
+        state.selected_token_id = Some("token_1".to_string());
+        assert!(state.selected_book().is_some());
+
+        state.remove_book("token_1");
+        assert!(state.books.is_empty());
+    }
+
+    #[test]
+    fn test_orderbook_stats() {
+        let book = create_test_orderbook();
+        let stats = OrderBookStats::from_orderbook(&book, 10);
+
+        assert_eq!(stats.best_bid, Some(dec!(0.50)));
+        assert_eq!(stats.best_ask, Some(dec!(0.52)));
+        assert_eq!(stats.mid_price, Some(dec!(0.51)));
+        assert_eq!(stats.bid_depth, 3);
+        assert_eq!(stats.ask_depth, 3);
+    }
+
+    #[test]
+    fn test_empty_orderbook() {
+        let book = OrderBookDepth::new("market_1", "token_1");
+        assert!(book.is_empty());
+        assert!(book.best_bid().is_none());
+        assert!(book.best_ask().is_none());
+        assert_eq!(book.mid_price(), None);
+        assert_eq!(book.spread(), None);
+        assert_eq!(book.imbalance(10), None);
+    }
+}
