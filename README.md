@@ -3,6 +3,7 @@
 [![Crates.io](https://img.shields.io/crates/v/clobster.svg)](https://crates.io/crates/clobster)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Rust](https://img.shields.io/badge/rust-1.85%2B-orange.svg)](https://www.rust-lang.org)
+[![Documentation](https://img.shields.io/badge/docs-book-blue)](https://thiras.github.io/clobster/)
 
 **CLOBster** is a terminal user interface (TUI) framework for [Polymarket](https://polymarket.com) prediction markets. Built with [Rust](https://rust-lang.org), [ratatui](https://ratatui.rs), and [polymarket-rs](https://crates.io/crates/polymarket-rs).
 
