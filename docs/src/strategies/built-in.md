@@ -1,6 +1,6 @@
 # Built-in Strategies
 
-Clobster includes several ready-to-use strategies. Each implements different market dynamics and can be customized via parameters.
+CLOBster includes several ready-to-use strategies. Each implements different market dynamics and can be customized via parameters.
 
 ## Available Strategies
 

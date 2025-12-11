@@ -1,6 +1,6 @@
 # Architecture Overview
 
-Clobster is built on a clean, modular architecture designed for reliability and extensibility.
+CLOBster is built on a clean, modular architecture designed for reliability and extensibility.
 
 ## High-Level Architecture
 

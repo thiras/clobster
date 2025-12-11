@@ -1,6 +1,6 @@
 # State Module
 
-The state module provides centralized state management for Clobster.
+The state module provides centralized state management for CLOBster.
 
 ## Store
 

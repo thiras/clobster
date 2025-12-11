@@ -1,10 +1,10 @@
-# Clobster
+# CLOBster
 
 [![Crates.io](https://img.shields.io/crates/v/clobster.svg)](https://crates.io/crates/clobster)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Rust](https://img.shields.io/badge/rust-1.85%2B-orange.svg)](https://www.rust-lang.org)
 
-**Clobster** is a terminal user interface (TUI) framework for [Polymarket](https://polymarket.com) prediction markets. Built with [Rust](https://rust-lang.org), [ratatui](https://ratatui.rs), and [polymarket-rs](https://crates.io/crates/polymarket-rs).
+**CLOBster** is a terminal user interface (TUI) framework for [Polymarket](https://polymarket.com) prediction markets. Built with [Rust](https://rust-lang.org), [ratatui](https://ratatui.rs), and [polymarket-rs](https://crates.io/crates/polymarket-rs).
 
 <!-- ![Clobster Demo](docs/demo.gif) -->
 
@@ -65,7 +65,7 @@ help = "?"
 refresh = "r"
 ```
 
-2. **Run Clobster**:
+2. **Run CLOBster**:
 
 ```bash
 clobster
@@ -79,7 +79,7 @@ RUST_LOG=clobster=debug clobster
 
 ## Architecture
 
-Clobster follows a **unidirectional data flow** pattern (Redux/Elm-inspired):
+CLOBster follows a **unidirectional data flow** pattern (Redux/Elm-inspired):
 
 ```
 Events → Actions → Store (reduce) → UI renders from Store
@@ -105,7 +105,7 @@ Events → Actions → Store (reduce) → UI renders from Store
 
 ## Trading Strategies
 
-Clobster provides a powerful framework for building automated trading strategies.
+CLOBster provides a powerful framework for building automated trading strategies.
 
 ### Quick Example
 
@@ -214,7 +214,7 @@ Contributions are welcome! Please follow [Conventional Commits](https://www.conv
 
 ## License
 
-Clobster is licensed under the [MIT License](LICENSE).
+CLOBster is licensed under the [MIT License](LICENSE).
 
 ## Acknowledgments
 

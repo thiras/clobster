@@ -1,6 +1,6 @@
 # Release Process
 
-Clobster uses `cargo-release` and `git-cliff` for automated releases.
+CLOBster uses `cargo-release` and `git-cliff` for automated releases.
 
 ## Version Scheme
 

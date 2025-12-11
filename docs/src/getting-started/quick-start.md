@@ -30,7 +30,7 @@ help = "?"
 refresh = "r"
 ```
 
-## 2. Launch Clobster
+## 2. Launch CLOBster
 
 ```bash
 clobster
@@ -38,7 +38,7 @@ clobster
 
 ## 3. Navigate the Interface
 
-Clobster uses vim-style keybindings:
+CLOBster uses vim-style keybindings:
 
 | Key | Action |
 |-----|--------|

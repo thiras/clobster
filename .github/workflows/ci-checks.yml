@@ -61,11 +61,12 @@ jobs:
             ${{ runner.os }}-mdbook-
 
       - name: Install mdBook tools
-        if: steps.mdbook-cache.outputs.cache-hit != 'true'
         run: |
-          cargo install mdbook --version 0.4.48 --locked
-          cargo install mdbook-mermaid --version 0.16.2 --locked
-          cargo install mdbook-katex --locked
+          if [[ "${{ steps.mdbook-cache.outputs.cache-hit }}" != "true" ]]; then
+            cargo install mdbook --version 0.4.48 --locked --force
+            cargo install mdbook-mermaid --version 0.16.2 --locked --force
+            cargo install mdbook-katex --locked --force
+          fi
 
       - name: Install Mermaid support
         run: |

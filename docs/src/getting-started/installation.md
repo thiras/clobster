@@ -39,7 +39,7 @@ RUST_LOG=clobster=debug cargo run
 
 ## Verify Installation
 
-Check that Clobster is installed correctly:
+Check that CLOBster is installed correctly:
 
 ```bash
 clobster --version

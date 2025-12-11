@@ -1,6 +1,6 @@
 # Testing
 
-Clobster uses Rust's built-in testing framework along with helpful crates for mocking and assertions.
+CLOBster uses Rust's built-in testing framework along with helpful crates for mocking and assertions.
 
 ## Running Tests
 
