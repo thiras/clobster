@@ -100,6 +100,7 @@ src/
 │   ├── app_state.rs    # Application state
 │   ├── market_state.rs # Market data
 │   ├── order_state.rs  # Order tracking
+│   ├── orderbook_state.rs # Order book depth data
 │   ├── portfolio_state.rs # Portfolio/positions
 │   └── mod.rs          # Store and Action enum
 ├── strategy/           # Trading strategies
