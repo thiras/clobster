@@ -35,7 +35,7 @@ jobs:
             ~/.cargo/bin/mdbook
             ~/.cargo/bin/mdbook-mermaid
             ~/.cargo/bin/mdbook-katex
-          key: mdbook-bins-v1
+          key: mdbook-bins-v3
 
       - name: Install mdBook tools
         if: steps.mdbook-cache.outputs.cache-hit != 'true'
