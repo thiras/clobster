@@ -158,7 +158,8 @@ jobs:
           cargo nextest run \
             --archive-file nextest-archive.tar.zst \
             --partition count:${{ matrix.partition }}/3 \
-            --profile ci
+            --profile ci \
+            --no-tests=pass
 
   lint:
     name: Lint (Clippy)
