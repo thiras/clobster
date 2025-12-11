@@ -232,7 +232,7 @@ impl App {
                 self.store.reduce(Action::OrderBookLoaded(book));
             }
             Err(e) => {
-                self.store.reduce(Action::SetError(e.to_string()));
+                self.store.reduce(Action::OrderBookError(e.to_string()));
             }
         }
 

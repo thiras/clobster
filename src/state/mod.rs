@@ -52,6 +52,7 @@ pub enum Action {
     // Order book actions
     LoadOrderBook(String), // token_id
     OrderBookLoaded(OrderBookDepth),
+    OrderBookError(String),  // error message for orderbook loading
     SelectOrderBook(String), // token_id
     ClearOrderBook(String),  // token_id
     ClearAllOrderBooks,
@@ -272,6 +273,11 @@ impl Store {
             Action::OrderBookLoaded(book) => {
                 self.orderbooks.update_book(book);
                 self.orderbooks.loading = false;
+                self.orderbooks.error = None;
+            }
+            Action::OrderBookError(msg) => {
+                self.orderbooks.loading = false;
+                self.orderbooks.error = Some(msg);
             }
             Action::SelectOrderBook(token_id) => {
                 self.orderbooks.selected_token_id = Some(token_id);
