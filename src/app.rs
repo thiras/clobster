@@ -139,6 +139,9 @@ impl App {
             Action::RefreshPortfolio | Action::LoadPortfolio => {
                 self.refresh_portfolio().await?;
             }
+            Action::RefreshOrderBook(token_id) | Action::LoadOrderBook(token_id) => {
+                self.refresh_orderbook(token_id).await?;
+            }
             _ => {
                 // Let the store handle the action
                 self.store.reduce(action);
@@ -219,6 +222,23 @@ impl App {
         Ok(())
     }
 
+    /// Refresh order book for a specific token.
+    async fn refresh_orderbook(&mut self, token_id: &str) -> Result<()> {
+        self.store
+            .reduce(Action::LoadOrderBook(token_id.to_string()));
+
+        match self.fetch_orderbook(token_id).await {
+            Ok(book) => {
+                self.store.reduce(Action::OrderBookLoaded(book));
+            }
+            Err(e) => {
+                self.store.reduce(Action::SetError(e.to_string()));
+            }
+        }
+
+        Ok(())
+    }
+
     /// Fetch markets from the API.
     async fn fetch_markets(&self) -> Result<Vec<crate::state::Market>> {
         if let Some(client) = &self.api_client {
@@ -243,6 +263,15 @@ impl App {
             client.fetch_portfolio().await
         } else {
             Ok(crate::state::PortfolioState::default())
+        }
+    }
+
+    /// Fetch order book for a token from the API.
+    async fn fetch_orderbook(&self, token_id: &str) -> Result<crate::state::OrderBookDepth> {
+        if let Some(client) = &self.api_client {
+            client.fetch_orderbook(token_id).await
+        } else {
+            Err(Error::application("No API client available"))
         }
     }
 }
