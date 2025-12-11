@@ -1,6 +1,6 @@
 # Contributing
 
-Thank you for your interest in contributing to Clobster!
+Thank you for your interest in contributing to CLOBster!
 
 ## Code of Conduct
 

@@ -1,6 +1,6 @@
-# Clobster
+# CLOBster
 
-**Clobster** is a production-grade terminal user interface (TUI) framework for [Polymarket](https://polymarket.com) prediction markets. Built with [Rust](https://rust-lang.org), [ratatui](https://ratatui.rs), and [polymarket-rs](https://crates.io/crates/polymarket-rs).
+**CLOBster** is a production-grade terminal user interface (TUI) framework for [Polymarket](https://polymarket.com) prediction markets. Built with [Rust](https://rust-lang.org), [ratatui](https://ratatui.rs), and [polymarket-rs](https://crates.io/crates/polymarket-rs).
 
 ## Features
 
@@ -44,7 +44,7 @@ impl Strategy for MyStrategy {
 
 ## Architecture at a Glance
 
-Clobster follows a **unidirectional data flow** pattern:
+CLOBster follows a **unidirectional data flow** pattern:
 
 ```mermaid
 flowchart LR
@@ -56,8 +56,8 @@ flowchart LR
 
 ## Project Status
 
-Clobster is under active development. See the [GitHub repository](https://github.com/thiras/clobster) for the latest updates.
+CLOBster is under active development. See the [GitHub repository](https://github.com/thiras/clobster) for the latest updates.
 
 ## License
 
-Clobster is licensed under the MIT License.
+CLOBster is licensed under the MIT License.

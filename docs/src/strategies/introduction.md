@@ -1,6 +1,6 @@
 # Trading Strategies
 
-Clobster provides a powerful framework for building and deploying automated trading strategies on Polymarket.
+CLOBster provides a powerful framework for building and deploying automated trading strategies on Polymarket.
 
 ## Why Strategies?
 
@@ -87,6 +87,6 @@ pub struct RiskConfig {
 
 ## Next Steps
 
-- [Built-in Strategies](./built-in.md) - Strategies included with Clobster
+- [Built-in Strategies](./built-in.md) - Strategies included with CLOBster
 - [Custom Strategies](./custom.md) - Build your own strategies
 - [Risk Management](./risk-management.md) - Configure safeguards

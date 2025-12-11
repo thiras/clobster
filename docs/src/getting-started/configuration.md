@@ -1,6 +1,6 @@
 # Configuration
 
-Clobster loads configuration from `~/.config/clobster/config.toml`.
+CLOBster loads configuration from `~/.config/clobster/config.toml`.
 
 ## Full Configuration Reference
 

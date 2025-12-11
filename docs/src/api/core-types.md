@@ -1,6 +1,6 @@
 # Core Types
 
-This section documents the fundamental types used throughout Clobster.
+This section documents the fundamental types used throughout CLOBster.
 
 ## Error Handling
 

@@ -1,6 +1,6 @@
 # Risk Management
 
-Clobster includes a comprehensive risk management system to protect your capital.
+CLOBster includes a comprehensive risk management system to protect your capital.
 
 ## Risk Guard
 

@@ -1,6 +1,6 @@
 # State Management
 
-Clobster uses a centralized state management pattern inspired by Redux and Elm.
+CLOBster uses a centralized state management pattern inspired by Redux and Elm.
 
 ## The Store
 
