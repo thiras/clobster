@@ -13,6 +13,7 @@ pub use help::HelpPanel;
 pub use market_list::MarketList;
 pub use notifications::{render_error, render_notification};
 pub use order_list::OrderList;
+#[allow(unused_imports)]
 pub use orderbook::{OrderBook, OrderBookChart, OrderBookCompact};
 pub use position_list::PositionList;
 pub use status_bar::StatusBar;
